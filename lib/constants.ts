@@ -87,8 +87,8 @@ export function characterById(id: string | undefined | null) {
 export const TWEMOJI_CREDIT = "Emoji graphics: Twemoji by X Corp & contributors, CC-BY 4.0.";
 
 export const DEFAULT_APP_SETTINGS = {
-  channel: "SeerahVerse Academia",
-  tagline: "where knowledge meets leadership",
+  channel: "AI_LEARNING_VIDEO_GENERATION_BY_HAMAS",
+  tagline: "learning made fun",
   chip: "",
   voice: "af_heart",
   speed: 0.92,
