@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
-import { Check, Mic2, Music2, Palette, Pause, Play, UserRound, Wand2 } from "lucide-react";
+import { Check, Clapperboard, Mic2, Music2, Palette, Pause, Play, UserRound, Wand2 } from "lucide-react";
 import { MUSIC, PALETTES, VOICES, characterById } from "@/lib/constants";
 import { PresenterPicker } from "./PresenterPicker";
+import { VideoStylePicker } from "./VideoStylePicker";
 import { Chip, Segmented, Toggle, cx } from "./ui";
 
 export interface StyleValue {
@@ -14,6 +15,8 @@ export interface StyleValue {
   sfx: boolean;
   mascot: boolean;
   presenter: string;
+  /** "presenter" = character + emoji scenes, "explainer" = illustrated diagram that changes step by step */
+  style: "presenter" | "explainer";
   captions: boolean;
   palette: "bright" | "pastel" | "ocean" | "sunset" | "forest" | "candy";
   chip: string;
@@ -189,22 +192,54 @@ function SpeedSlider({ value, onChange }: { value: number; onChange: (v: number)
 }
 
 /* ------------------------------------------------------------------ main panel */
-export function StylePanel({ value, onChange }: { value: StyleValue; onChange: (v: StyleValue) => void }) {
+export function StylePanel({
+  value,
+  onChange,
+  lockStyle,
+}: {
+  value: StyleValue;
+  onChange: (v: StyleValue) => void;
+  /** Script editor: the style is fixed by the written script, so hide the style picker. */
+  lockStyle?: boolean;
+}) {
   const set = <K extends keyof StyleValue>(k: K, v: StyleValue[K]) => onChange({ ...value, [k]: v });
   const presenter = value.presenter || (value.mascot ? "ollie" : "none");
   const music = MUSIC.find((m) => m.id === value.music);
+  const explainer = value.style === "explainer";
 
   return (
     <div className="space-y-4">
+      {!lockStyle && (
       <Section
-        icon={<UserRound className="h-5 w-5" />}
-        tone="bg-pink-500/15 text-pink-300"
-        title="Presenter"
-        desc="Who hosts the lesson on screen — lip-synced, blinking and waving."
-        aside={<Chip active color="rose">{characterById(presenter).short}</Chip>}
+        icon={<Clapperboard className="h-5 w-5" />}
+        tone="bg-cyan-400/15 text-cyan-300"
+        title="Video style"
+        desc="How the lesson is shown on screen."
+        aside={<Chip active color={explainer ? "sky" : "brand"}>{explainer ? "Diagram" : "Character"}</Chip>}
       >
-        <PresenterPicker value={presenter} onChange={(id) => onChange({ ...value, presenter: id, mascot: id !== "none" })} />
+        <VideoStylePicker value={value.style ?? "presenter"} onChange={(st) => onChange({ ...value, style: st })} />
       </Section>
+      )}
+
+      {explainer ? (
+        <section className="panel relative flex items-center gap-4 overflow-hidden p-4 sm:p-5">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/[0.05] text-xl ring-1 ring-inset ring-white/10">🔬</span>
+          <div>
+            <h3 className="text-[15px] font-semibold text-fg">No character — the diagram explains the lesson</h3>
+            <p className="text-xs text-fg-subtle">Claude draws one object for the topic, cuts it open and animates it step by step with labels and zooms. A friendly teacher voice narrates.</p>
+          </div>
+        </section>
+      ) : (
+        <Section
+          icon={<UserRound className="h-5 w-5" />}
+          tone="bg-pink-500/15 text-pink-300"
+          title="Presenter"
+          desc="Who hosts the lesson on screen — lip-synced, blinking and waving."
+          aside={<Chip active color="rose">{characterById(presenter).short}</Chip>}
+        >
+          <PresenterPicker value={presenter} onChange={(id) => onChange({ ...value, presenter: id, mascot: id !== "none" })} />
+        </Section>
+      )}
 
       <Section icon={<Mic2 className="h-5 w-5" />} tone="bg-cyan-400/15 text-cyan-300" title="Narrator voice" desc="Tap ▶ to hear each voice. The presenter speaks with this voice.">
         <VoicePicker value={value.voice} onChange={(v) => set("voice", v)} />
@@ -285,11 +320,15 @@ export function StyleSummary({ value }: { value: StyleValue }) {
   const palette = PALETTES.find((p) => p.id === value.palette);
   return (
     <div className="flex flex-wrap gap-1.5">
-      <Chip active color="rose">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        {presenter.id !== "none" && <img src={presenter.img} alt="" className="-my-1 -ml-1 h-5 w-5 object-contain" />}
-        {presenter.id === "none" ? "No character" : presenter.short}
-      </Chip>
+      {value.style === "explainer" ? (
+        <Chip active color="sky">🔬 Diagram explainer</Chip>
+      ) : (
+        <Chip active color="rose">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {presenter.id !== "none" && <img src={presenter.img} alt="" className="-my-1 -ml-1 h-5 w-5 object-contain" />}
+          {presenter.id === "none" ? "No character" : presenter.short}
+        </Chip>
+      )}
       <Chip active>
         {voice?.emoji} {voice?.name ?? value.voice}
       </Chip>

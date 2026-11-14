@@ -229,7 +229,7 @@ export default function SettingsPage() {
               </div>
             </Section>
 
-            <Section id="style" icon={<Palette className="h-5 w-5" />} title="Style & presenter" desc="Default presenter character, voice, music, colours and extras." tone="pink">
+            <Section id="style" icon={<Palette className="h-5 w-5" />} title="Style & presenter" desc="Default video style, presenter character, voice, music, colours and extras." tone="pink">
               <StylePanel
                 value={style}
                 onChange={(v) => {

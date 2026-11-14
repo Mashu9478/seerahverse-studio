@@ -23,10 +23,17 @@ export function styleFromSettings(s: AppSettings): StyleValue {
     sfx: s.sfx,
     mascot: s.mascot,
     presenter: s.presenter ?? (s.mascot ? "ollie" : "none"),
+    style: s.style === "explainer" ? "explainer" : "presenter",
     captions: s.captions,
     palette: s.palette as StyleValue["palette"],
     chip: s.chip,
     greeting: s.greeting,
     subscribe: s.subscribe,
   };
+}
+
+/** Settings payload for a new video from the chosen style. */
+export function styleToSettings(v: StyleValue) {
+  const explainer = v.style === "explainer";
+  return { ...v, presenter: explainer ? "none" : v.presenter, mascot: !explainer && v.presenter !== "none" };
 }

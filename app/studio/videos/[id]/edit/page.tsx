@@ -33,6 +33,7 @@ import {
   fmtDuration,
   planSeconds,
   planWords,
+  explainerBeats,
   sceneSeconds,
   type Scene,
   type VideoPlan,
@@ -42,6 +43,7 @@ import { Badge, Button, Card, IconButton, Modal, Segmented, Skeleton, cx } from 
 import { SceneForm } from "@/components/editor/SceneForm";
 import { SceneList, typeMeta } from "@/components/editor/SceneList";
 import { YoutubePanel } from "@/components/editor/YoutubePanel";
+import { ExplainerEditor } from "@/components/editor/ExplainerEditor";
 import { StylePanel, type StyleValue } from "@/components/StylePanel";
 import { FormatPicker } from "@/components/FormatPicker";
 
@@ -422,8 +424,10 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
     );
   }
 
-  const scene = plan.scenes[Math.min(sel, plan.scenes.length - 1)];
+  const isExplainer = plan.style === "explainer" || !!plan.explainer;
+  const scene: Scene | undefined = plan.scenes[Math.min(sel, plan.scenes.length - 1)];
   const short = plan.format === "short";
+  const stepCount = (plan.explainer?.parts ?? []).reduce((n, p) => n + p.steps.length, 0);
   const style: StyleValue = {
     voice: plan.voice,
     speed: plan.speed,
@@ -431,6 +435,7 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
     sfx: plan.sfx,
     mascot: plan.mascot,
     presenter: plan.presenter ?? (plan.mascot ? "ollie" : "none"),
+    style: isExplainer ? "explainer" : "presenter",
     captions: plan.captions,
     palette: plan.palette,
     chip: plan.brand.chip ?? "",
@@ -438,7 +443,7 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
     subscribe: plan.brand.subscribe,
   };
   const warnings = video.warnings ?? [];
-  const meta = typeMeta(scene.type);
+  const meta = scene ? typeMeta(scene.type) : null;
 
   const sideTabs: { value: SideTab; label: React.ReactNode }[] = [
     { value: "style", label: <span className="flex items-center gap-1.5"><Palette className="h-3.5 w-3.5" />Style</span> },
@@ -480,7 +485,7 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
                 <StatusPill status={video.status} />
                 <Badge className={short ? "bg-pink-500/15 text-pink-300" : "bg-violet-500/15 text-violet-300"}>{short ? "📱 Short · 9:16" : "🖥️ Long · 16:9"}</Badge>
                 <span className="text-[11px] font-semibold text-fg-subtle">
-                  {plan.scenes.length} scenes · {words} words
+                  {isExplainer ? `${stepCount} steps` : `${plan.scenes.length} scenes`} · {words} words
                 </span>
                 <span className="mx-1 hidden h-3 w-px bg-white/10 sm:block" />
                 <SaveIndicator state={saveState} onRetry={() => save(false)} />
@@ -516,6 +521,10 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
           sideOpen ? "xl:grid-cols-[290px_minmax(0,1fr)_380px]" : "xl:grid-cols-[290px_minmax(0,1fr)_52px]",
         )}
       >
+        {isExplainer ? (
+          <ExplainerEditor plan={plan} onChange={change} locked={locked} />
+        ) : scene && meta ? (
+        <>
         {/* left: scenes */}
         <div className="lg:sticky lg:top-40 lg:self-start">
           <SceneList
@@ -599,6 +608,10 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
             </motion.div>
           </AnimatePresence>
         </div>
+        </>
+        ) : (
+          <Card className="p-8 text-center text-sm text-fg-muted lg:col-span-2">This script has no scenes. Use “Regenerate” to write a new one.</Card>
+        )}
 
         {/* right: side panel */}
         <div className="min-w-0 lg:col-span-2 xl:col-span-1 xl:sticky xl:top-40 xl:self-start">
@@ -615,6 +628,12 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
                   <motion.div key={side} initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }}>
                     {side === "style" && (
                       <div className={cx("space-y-7", locked && "pointer-events-none opacity-60")}>
+                        {isExplainer ? (
+                          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-sm text-fg-muted">
+                            <div className="font-display text-sm font-semibold text-fg">{short ? "📱 Short · 9:16" : "🖥️ Long · 16:9"}</div>
+                            <p className="mt-1 text-xs text-fg-subtle">The diagram was drawn for this screen shape. To change format or length, use “Regenerate”.</p>
+                          </div>
+                        ) : (
                         <div>
                           <h3 className="mb-3 font-display text-sm font-semibold text-fg">Format & length</h3>
                           <FormatPicker
@@ -624,8 +643,10 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
                           />
                           <p className="hint mt-2">Changing the format keeps your scenes — for big changes use “Regenerate”.</p>
                         </div>
+                        )}
                         <div className="divider" />
                         <StylePanel
+                          lockStyle
                           value={style}
                           onChange={(v) =>
                             change({
@@ -634,8 +655,8 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
                               speed: v.speed,
                               music: v.music,
                               sfx: v.sfx,
-                              mascot: v.presenter !== "none",
-                              presenter: v.presenter as typeof plan.presenter,
+                              mascot: !isExplainer && v.presenter !== "none",
+                              presenter: (isExplainer ? "none" : v.presenter) as typeof plan.presenter,
                               captions: v.captions,
                               palette: v.palette,
                               brand: { ...plan.brand, chip: v.chip || undefined, greeting: v.greeting, subscribe: v.subscribe },
@@ -664,7 +685,12 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
                         )}
                         <p className="hint">Islamic references (ayah, hadith, Seerah) are always flagged — verify them with a trusted source before publishing.</p>
                         <div className="divider my-2" />
-                        <h3 className="font-display text-sm font-semibold text-fg">Scene checks</h3>
+                        <h3 className="font-display text-sm font-semibold text-fg">{isExplainer ? "Narration checks" : "Scene checks"}</h3>
+                        {isExplainer && explainerBeats(plan.explainer).some((b) => !b.say.trim()) && (
+                          <div className="flex w-full items-center gap-2 rounded-xl border border-rose-400/20 bg-rose-500/[0.06] p-3 text-left text-sm text-rose-200">
+                            <CircleAlert className="h-4 w-4 shrink-0" /> A step has an empty narration line
+                          </div>
+                        )}
                         {plan.scenes.map((s, i) => {
                           const empty = s.beats.some((b) => !b.say.trim());
                           if (!empty) return null;

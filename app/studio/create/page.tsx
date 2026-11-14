@@ -12,7 +12,7 @@ import { Button, Chip, PageHeader, Switch, cx } from "@/components/ui";
 import { FormatPicker, durationLabel, type FormatValue } from "@/components/FormatPicker";
 import { StylePanel, StyleSummary, type StyleValue } from "@/components/StylePanel";
 import { ImageUploader } from "@/components/ImageUploader";
-import { styleFromSettings, useAppSettings } from "@/components/useAppSettings";
+import { styleToSettings, styleFromSettings, useAppSettings } from "@/components/useAppSettings";
 import { Stepper, type StepDef } from "@/components/create/Stepper";
 import { LiveSummary } from "@/components/create/LiveSummary";
 
@@ -100,7 +100,7 @@ export default function CreatePage() {
               format: fmt.format,
               target_seconds: fmt.target_seconds,
               review,
-              settings: { ...style, mascot: style.presenter !== "none" },
+              settings: styleToSettings(style),
             },
           ],
         },
@@ -284,7 +284,9 @@ export default function CreatePage() {
                       <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-brand-500/20 via-fuchsia-500/10 to-cyan-400/10 p-6">
                         <div className="pointer-events-none absolute -right-10 -top-10 h-56 w-56 rounded-full blur-3xl" style={{ background: `${presenter.color}44` }} />
                         <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center">
-                          {presenter.id !== "none" ? (
+                          {style.style === "explainer" ? (
+                            <div className="grid h-32 w-32 shrink-0 place-items-center rounded-3xl border border-cyan-300/30 bg-cyan-400/10 text-5xl">🔬</div>
+                          ) : presenter.id !== "none" ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={presenter.img} alt={presenter.name} className="h-32 w-32 shrink-0 animate-floaty object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.6)]" />
                           ) : (
@@ -294,7 +296,7 @@ export default function CreatePage() {
                             <div className="eyebrow">Ready to create</div>
                             <h2 className="mt-3 font-display text-2xl font-semibold leading-tight text-fg sm:text-3xl">{topic.trim() || "Lesson from your textbook pages"}</h2>
                             <p className="mt-2 text-sm text-fg-muted">
-                              {presenter.id === "none" ? "Narrated by" : `${presenter.short} presents with`} the <b className="text-fg">{voice?.name}</b> voice ·{" "}
+                              {style.style === "explainer" ? "Diagram explainer narrated by" : presenter.id === "none" ? "Narrated by" : `${presenter.short} presents with`} the <b className="text-fg">{voice?.name}</b> voice ·{" "}
                               {music?.name.toLowerCase()} · {fmt.format === "short" ? "vertical Short" : "landscape video"}
                             </p>
                           </div>

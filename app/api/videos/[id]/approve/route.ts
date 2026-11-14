@@ -3,6 +3,7 @@ import { getVideo, updateVideo } from "@/lib/db";
 import { baseUrl, handle, jsonError } from "@/lib/http";
 import { PlanSchema, YoutubeSchema, describeIssues, sanitizePlan } from "@/lib/plan";
 import { tick } from "@/lib/queue";
+import { sanitizeExplainer } from "@/lib/explainer";
 
 export const maxDuration = 300;
 type Ctx = { params: Promise<{ id: string }> };
@@ -18,7 +19,18 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (!parsed.success) {
     return NextResponse.json({ error: "Please fix these first:", issues: describeIssues(parsed.error) }, { status: 400 });
   }
-  const { plan, warnings } = sanitizePlan(parsed.data, { userText: v.details });
+  const sp = sanitizePlan(parsed.data, { userText: v.details });
+  let plan = sp.plan;
+  let warnings = sp.warnings;
+  if (plan.explainer) {
+    try {
+      const ex = sanitizeExplainer(plan.explainer, plan.format);
+      plan = { ...plan, style: "explainer", explainer: ex.explainer, scenes: [] };
+      warnings = [...warnings, ...ex.warnings];
+    } catch (e) {
+      return jsonError(`The diagram has a problem: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
   const patch: Record<string, unknown> = {
     plan,
     warnings,

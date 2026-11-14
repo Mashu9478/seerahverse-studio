@@ -16,6 +16,7 @@ const Patch = z
     sfx: z.boolean(),
     mascot: z.boolean(),
     presenter: z.string().max(20),
+    style: z.enum(["presenter", "explainer"]),
     captions: z.boolean(),
     palette: z.enum(["bright", "pastel", "ocean", "sunset", "forest", "candy"]),
     format: z.enum(["long", "short"]),

@@ -30,7 +30,13 @@ SVGNS = "http://www.w3.org/2000/svg"
 ET.register_namespace("", SVGNS)
 ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
 
-FFMPEG = os.environ.get("FFMPEG") or "ffmpeg"
+FFMPEG = os.environ.get("FFMPEG")
+if not FFMPEG:
+    try:
+        import imageio_ffmpeg
+        FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        FFMPEG = "ffmpeg"
 
 
 # ----------------------------------------------------------------- helpers
@@ -273,25 +279,40 @@ class State:
 
 
 # ----------------------------------------------------------------- frame
+# ----------------------------------------------------------------- frame
 class Renderer:
-    def __init__(self, plan, beats, actions, headers, total):
-        self.plan = plan
-        self.stage = Stage(plan)
+    def __init__(self, part, beats, actions, headers, total):
+        self.plan = part
+        self.stage = Stage(part)
         self.state = State(self.stage, actions, total)
         self.beats, self.headers, self.total = beats, headers, total
         self.W, self.H = self.stage.W, self.stage.H
-        th = plan.get("theme", {})
+        self.portrait = self.H >= self.W
+        th = part.get("theme") or {}
         self.bg = th.get("bg", "#EEF2F4")
         self.ink = th.get("ink", "#1E2A30")
         self.label_ink = th.get("label", "#2B3A42")
-        self.accent = th.get("accent", "#E03131")
-        self.captions = plan.get("captions", True)
+        self.accent = th.get("accent", "#1C7ED6")
+        self.captions = part.get("captions", True)
+        if self.portrait:
+            self.L = dict(band=420, tag_y=150, title_y=250, title_y_notag=215, title_size=76, title_lh=88,
+                          title_maxw=self.W - 140, title_lines=2, cap_size=46, cap_lh=60, cap_maxw=self.W - 200,
+                          cap_bottom=210, cap_lines=3)
+        else:
+            self.L = dict(band=250, tag_y=64, title_y=142, title_y_notag=110, title_size=66, title_lh=76,
+                          title_maxw=self.W - 520, title_lines=1, cap_size=42, cap_lh=54, cap_maxw=self.W - 560,
+                          cap_bottom=60, cap_lines=2)
         self.F_tag = font(30, 600)
-        self.F_title = font(76, 700)
+        self.F_title = font(self.L["title_size"], 700)
         self.F_label = font(31, 600)
-        self.F_cap = font(46, 600)
+        self.F_cap = font(self.L["cap_size"], 600)
+        band = Image.new("L", (1, self.L["band"]))
+        b0 = self.L["band"] * 0.6
+        for y in range(self.L["band"]):
+            band.putpixel((0, y), int(235 * clamp(1 - (y - b0) / (self.L["band"] - b0))))
+        self.band = Image.new("RGBA", (self.W, self.L["band"]), (*hex2rgb(self.bg), 255))
+        self.band.putalpha(band.resize((self.W, self.L["band"])))
 
-    # --- stage svg for time t
     def stage_png(self, t, props, cam, flows, pulses):
         root = copy.deepcopy(self.stage.root)
         idmap = {el.get("id"): el for el in root.iter() if el.get("id")}
@@ -431,7 +452,7 @@ class Renderer:
                                                        "r": f"{r * 0.32:.1f}", "fill": "#FFFFFF",
                                                        "opacity": f"{op * 0.7:.2f}"})
 
-    # --- overlays
+    # --- overlays (all drawn onto one RGBA layer per frame)
     def to_screen(self, cam, x, y):
         cx, cy, cw, ch = cam
         s = max(self.W / cw, self.H / ch)
@@ -439,17 +460,16 @@ class Renderer:
         oy = (self.H - ch * s) / 2
         return ((x - cx) * s + ox, (y - cy) * s + oy)
 
-    def draw_labels(self, img, t, cam, labels):
-        d = ImageDraw.Draw(img)
+    def draw_labels(self, d, t, cam, labels):
+        bg = hex2rgb(self.bg)
         for lid, L in labels.items():
             a = L["a"]
-            u_in = clamp((t - L["t0"]) / 0.45)
-            op = ease(u_in)
+            op = ease(clamp((t - L["t0"]) / 0.45))
             if L["off"] is not None:
                 op *= 1 - ease(clamp((t - L["off"]) / 0.35))
-            if op <= 0.01:
+            if op <= 0.01 or not a.get("point"):
                 continue
-            px, py = self.to_screen(cam, *a["point"])
+            px, py = self.to_screen(cam, *a["point"][:2])
             side = a.get("side", "right")
             ln = float(a.get("len", 150))
             dy = float(a.get("dy", 0))
@@ -459,26 +479,32 @@ class Renderer:
             lx, ly = px + (ex - px) * g, py + (ey - py) * g
             ink = hex2rgb(a.get("color", self.label_ink))
             col = (*ink, int(255 * op))
-            ov = Image.new("RGBA", img.size, (0, 0, 0, 0))
-            od = ImageDraw.Draw(ov)
-            od.line([(px, py), (lx, ly)], fill=col, width=3)
-            od.ellipse([px - 6, py - 6, px + 6, py + 6], fill=col)
+            d.line([(px, py), (lx, ly)], fill=(*bg, int(200 * op)), width=8)
+            d.line([(px, py), (lx, ly)], fill=col, width=3)
+            d.ellipse([px - 7, py - 7, px + 7, py + 7], fill=(*bg, int(220 * op)))
+            d.ellipse([px - 5.5, py - 5.5, px + 5.5, py + 5.5], fill=col)
             if g >= 0.6:
                 top = op * clamp((g - 0.6) / 0.4)
-                txt = a["text"].upper()
-                tc = (*ink, int(255 * top))
-                # soft halo for readability
-                halo = Image.new("RGBA", img.size, (0, 0, 0, 0))
-                hd = ImageDraw.Draw(halo)
+                txt = str(a.get("text", "")).upper()
                 tx = ex + sx * 12
-                bg = hex2rgb(self.bg)
-                text_tracked(hd, (tx, ey), txt, self.F_label, (*bg, int(220 * top)), 2.2,
-                             "r" if side == "left" else "l")
-                halo = halo.filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.GaussianBlur(3))
-                ov = Image.alpha_composite(halo, ov)
-                od = ImageDraw.Draw(ov)
-                text_tracked(od, (tx, ey), txt, self.F_label, tc, 2.2, "r" if side == "left" else "l")
-            img.paste(Image.alpha_composite(img.convert("RGBA"), ov).convert("RGB"))
+                anc = "r" if side == "left" else "l"
+                self._tracked(d, (tx, ey), txt, self.F_label, (*ink, int(255 * top)), 2.2, anc,
+                              halo=(*bg, int(235 * top)))
+
+    def _tracked(self, d, xy, s, f, fill, tracking, anchor, halo=None):
+        widths = [d.textlength(ch, font=f) for ch in s]
+        total = sum(widths) + tracking * max(0, len(s) - 1)
+        x0 = xy[0] - (total / 2 if anchor == "m" else total if anchor == "r" else 0)
+        passes = ([("halo", halo)] if halo else []) + [("fill", fill)]
+        for kind, colr in passes:
+            x = x0
+            for ch, w in zip(s, widths):
+                if kind == "halo":
+                    d.text((x, xy[1]), ch, font=f, fill=colr, anchor="lm", stroke_width=6, stroke_fill=colr)
+                else:
+                    d.text((x, xy[1]), ch, font=f, fill=colr, anchor="lm")
+                x += w + tracking
+        return total
 
     def header_at(self, t):
         cur = 0
@@ -487,56 +513,50 @@ class Renderer:
                 cur = i
         return cur
 
-    def draw_header(self, img, t):
-        W = self.W
+    def draw_header(self, ov, d, t):
         i = self.header_at(t)
         h = self.headers[i]
         u = clamp((t - h["t"]) / 0.45) if i else 1.0
         prev = self.headers[i - 1] if i else None
-        ov = Image.new("RGBA", img.size, (0, 0, 0, 0))
-        # readable top band
-        band = Image.new("L", (1, 420))
-        for y in range(420):
-            band.putpixel((0, y), int(235 * clamp(1 - (y - 250) / 170)))
-        bgc = hex2rgb(self.bg)
-        top = Image.new("RGBA", (W, 420), (*bgc, 255))
-        top.putalpha(band.resize((W, 420)))
-        ov.alpha_composite(top, (0, 0))
-        d = ImageDraw.Draw(ov)
+        ov.alpha_composite(self.band, (0, 0))
         if prev is not None and u < 1:
             self._header_block(d, prev, 1 - ease(u * 1.6), -18 * ease(u))
         self._header_block(d, h, ease(u), 18 * (1 - ease(u)))
-        img.paste(Image.alpha_composite(img.convert("RGBA"), ov).convert("RGB"))
 
     def _header_block(self, d, h, op, dy):
         if op <= 0.01:
             return
-        W = self.W
+        W, L = self.W, self.L
         ink = hex2rgb(self.ink)
-        y_title = 250 if h.get("tag") else 215
+        y_title = L["title_y"] if h.get("tag") else L["title_y_notag"]
         if h.get("tag"):
-            tag = h["tag"].upper()
-            tw = text_tracked(ImageDraw.Draw(Image.new("RGBA", (1, 1))), (0, 0), tag, self.F_tag, (0, 0, 0, 0), 3)
+            tag = str(h["tag"]).upper()
+            tw = sum(d.textlength(c, font=self.F_tag) for c in tag) + 3 * max(0, len(tag) - 1)
             bx0, bx1 = W / 2 - tw / 2 - 26, W / 2 + tw / 2 + 26
-            by = 150 + dy
+            by = L["tag_y"] + dy
             d.rounded_rectangle([bx0, by - 26, bx1, by + 26], radius=26, fill=(255, 255, 255, int(255 * op)),
                                 outline=(*ink, int(60 * op)), width=2)
-            text_tracked(d, (W / 2, by + 1), tag, self.F_tag, (*ink, int(255 * op)), 3, "m")
-        title = h.get("title", "")
-        lines = wrap(d, title, self.F_title, W - 140)[:2]
-        hl = set(re.findall(r"[a-z']+", (h.get("hl") or "").lower()))
-        y = y_title + dy - (len(lines) - 1) * 44
+            self._tracked(d, (W / 2, by + 1), tag, self.F_tag, (*ink, int(255 * op)), 3, "m")
+        title = h.get("title", "") or ""
+        f = self.F_title
+        lines = wrap(d, title, f, L["title_maxw"])
+        if len(lines) > L["title_lines"]:
+            f = font(L["title_size"] * 0.8, 700)
+            lines = wrap(d, title, f, L["title_maxw"])[: L["title_lines"]]
+        hl = set(re.findall(r"[a-z0-9']+", (h.get("hl") or "").lower()))
+        lh = L["title_lh"] * (f.size / self.F_title.size)
+        y = y_title + dy - (len(lines) - 1) * lh / 2
         for ln in lines:
-            tw = d.textlength(ln, font=self.F_title)
+            tw = d.textlength(ln, font=f)
             x = W / 2 - tw / 2
             for wd in ln.split(" "):
-                key = re.sub(r"[^a-z']", "", wd.lower())
+                key = re.sub(r"[^a-z0-9']", "", wd.lower())
                 colr = hex2rgb(self.accent) if key and key in hl else ink
-                d.text((x, y), wd, font=self.F_title, fill=(*colr, int(255 * op)), anchor="lm")
-                x += d.textlength(wd + " ", font=self.F_title)
-            y += 88
+                d.text((x, y), wd, font=f, fill=(*colr, int(255 * op)), anchor="lm")
+                x += d.textlength(wd + " ", font=f)
+            y += lh
 
-    def draw_caption(self, img, t):
+    def draw_caption(self, d, t):
         if not self.captions:
             return
         b = None
@@ -548,73 +568,121 @@ class Renderer:
         u = clamp((t - b["t"]) / 0.25) * clamp((b["end"] - t) / 0.2)
         if u <= 0.01:
             return
-        W, H = self.W, self.H
-        ov = Image.new("RGBA", img.size, (0, 0, 0, 0))
-        d = ImageDraw.Draw(ov)
-        lines = wrap(d, b["caption"], self.F_cap, W - 200)[:3]
-        lh = 60
+        W, H, L = self.W, self.H, self.L
+        lines = wrap(d, b["caption"], self.F_cap, L["cap_maxw"])
+        if len(lines) > L["cap_lines"]:
+            # long beat: show the half being spoken
+            half = clamp((t - b["t"]) / max(0.2, b["speech"])) >= 0.5
+            mid = (len(lines) + 1) // 2
+            lines = lines[mid:] if half else lines[:mid]
+            lines = lines[: L["cap_lines"]]
+        lh = L["cap_lh"]
         hgt = lh * len(lines) + 40
-        y0 = H - 210 - hgt
+        y0 = H - L["cap_bottom"] - hgt
         wmax = max(d.textlength(l, font=self.F_cap) for l in lines)
         d.rounded_rectangle([W / 2 - wmax / 2 - 34, y0, W / 2 + wmax / 2 + 34, y0 + hgt], radius=30,
                             fill=(255, 255, 255, int(235 * u)))
-        # karaoke: highlight words already spoken
+        all_words = b["caption"].split()
         spoken = clamp((t - b["t"]) / max(0.2, b["speech"]))
-        say_words = sum(len(l.split()) for l in lines)
-        lit = int(round(spoken * say_words))
-        k = 0
-        ink = hex2rgb(self.ink)
-        acc = hex2rgb(self.accent)
+        lit = int(round(spoken * len(all_words)))
+        first = 0
+        joined = " ".join(lines).split()
+        # index of first shown word inside the caption
+        for k in range(len(all_words)):
+            if all_words[k:k + len(joined)] == joined:
+                first = k
+                break
+        k = first
+        ink, acc = hex2rgb(self.ink), hex2rgb(self.accent)
         for li, l in enumerate(lines):
-            words = l.split()
             tw = d.textlength(l, font=self.F_cap)
             x = W / 2 - tw / 2
             y = y0 + 20 + lh * li + lh / 2
-            for w in words:
+            for w in l.split():
                 c = acc if k < lit else ink
                 d.text((x, y), w, font=self.F_cap, fill=(*c, int(255 * u)), anchor="lm")
                 x += d.textlength(w + " ", font=self.F_cap)
                 k += 1
-        img.paste(Image.alpha_composite(img.convert("RGBA"), ov).convert("RGB"))
 
     def frame(self, t):
         props, cam, labels, flows, pulses = self.state.at(t)
-        img = self.stage_png(t, props, cam, flows, pulses)
-        self.draw_labels(img, t, cam, labels)
-        self.draw_header(img, t)
-        self.draw_caption(img, t)
+        img = self.stage_png(t, props, cam, flows, pulses).convert("RGBA")
+        ov = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        d = ImageDraw.Draw(ov)
+        self.draw_labels(d, t, cam, labels)
+        self.draw_header(ov, d, t)
+        self.draw_caption(d, t)
+        img = Image.alpha_composite(img, ov).convert("RGB")
         fo = clamp(t / 0.35) * clamp((self.total - t) / 0.5)
         if fo < 1:
             img = Image.blend(Image.new("RGB", img.size, hex2rgb(self.bg)), img, fo)
         return img
 
 
+# ----------------------------------------------------------------- plan normalising
+def parts_of(plan):
+    """Return (parts, settings). Accepts the website VideoPlan (style=explainer) or the flat sample format."""
+    ex = plan.get("explainer")
+    if ex and ex.get("parts"):
+        fmt = plan.get("format", "short")
+        W, H = (1080, 1920) if fmt == "short" else (1920, 1080)
+        theme = ex.get("theme") or {}
+        parts = []
+        for p in ex["parts"]:
+            parts.append({"stage": p["stage"], "hidden": p.get("hidden", []), "camera": p.get("camera"),
+                          "steps": p["steps"], "theme": theme, "w": W, "h": H,
+                          "captions": plan.get("captions", True)})
+        cfg = {"voice": plan.get("voice", "af_heart"), "speed": plan.get("speed", 0.92),
+               "music": plan.get("music", "calm"), "sfx": plan.get("sfx", True), "title": plan.get("title", ""),
+               "fps": 30}
+        return parts, cfg
+    part = {k: plan[k] for k in ("stage", "hidden", "camera", "steps", "theme", "w", "h", "captions") if k in plan}
+    cfg = {"voice": plan.get("voice", "af_heart"), "speed": plan.get("speed", 0.92),
+           "music": plan.get("music", "calm"), "sfx": plan.get("sfx", True), "title": plan.get("title", ""),
+           "fps": int(plan.get("fps", 30))}
+    return [part], cfg
+
+
+def part_timelines(parts, durs):
+    """durs: list of (speech, total) for every beat across parts, in order."""
+    out, k, off = [], 0, 0.0
+    for p in parts:
+        n = sum(len(s["beats"]) for s in p["steps"])
+        beats, actions, headers, total = build_timeline(p, durs[k:k + n])
+        out.append({"part": p, "beats": beats, "actions": actions, "headers": headers, "total": total, "off": off})
+        k += n
+        off += total
+    return out, off
+
+
 # ----------------------------------------------------------------- workers
-_R = None
+_R = {}
 
 
-def _init(args):
+def _init(tls):
     global _R
-    _R = Renderer(*args)
+    _R = {i: Renderer(tl["part"], tl["beats"], tl["actions"], tl["headers"], tl["total"]) for i, tl in enumerate(tls)}
 
 
 def _chunk(job):
-    i, f0, f1, fps, out = job
+    i, pi, f0, f1, fps, out = job
+    R = _R[pi]
     tmp = out[:-4] + ".part.mp4"
     p = subprocess.Popen([FFMPEG, "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24",
-                          "-s", f"{_R.W}x{_R.H}", "-r", str(fps), "-i", "-", "-c:v", "libx264", "-crf", "18",
-                          "-preset", "veryfast", "-pix_fmt", "yuv420p", tmp], stdin=subprocess.PIPE)
+                          "-s", f"{R.W}x{R.H}", "-r", str(fps), "-i", "-", "-c:v", "libx264", "-crf", "18",
+                          "-preset", "veryfast", "-pix_fmt", "yuv420p", "-g", str(fps * 2), tmp],
+                         stdin=subprocess.PIPE)
     for f in range(f0, f1):
-        p.stdin.write(_R.frame(f / fps).tobytes())
+        p.stdin.write(R.frame(f / fps).tobytes())
     p.stdin.close()
     if p.wait() != 0:
-        raise RuntimeError("ffmpeg failed on chunk %d" % i)
+        raise RuntimeError("video encoder failed on chunk %d" % i)
     os.replace(tmp, out)
-    return i
+    return i, f1 - f0
 
 
 # ----------------------------------------------------------------- audio
-def make_audio(plan, beats_spec, total, out_wav):
+def make_audio(cfg, tls, clips, total, out_wav):
     sys.path.insert(0, HERE)
     import audio as AU
     from scipy.signal import resample_poly
@@ -622,22 +690,25 @@ def make_audio(plan, beats_spec, total, out_wav):
     n = int(total * sr) + sr
     voice = np.zeros(n, np.float32)
     fx = np.zeros(n, np.float32)
-    for b, clip in beats_spec:
-        AU.mix_at(voice, resample_poly(clip, 2, 1).astype(np.float32), int(b["t"] * sr))
-    for a in plan.get("_actions", []):
-        k = a.get("sfx")
-        if k is None:
-            k = {"pop": "pop", "camera": "whoosh", "label": "tick"}.get(a.get("do"))
-            if a.get("do") == "label":
-                k = None
-        if k:
-            AU.mix_at(fx, AU.sfx(k, 0.7), int(a["t0"] * sr))
-    mix = voice + fx * 0.6
-    style = plan.get("music", "calm")
+    k = 0
+    for tl in tls:
+        for b in tl["beats"]:
+            AU.mix_at(voice, resample_poly(clips[k], 2, 1).astype(np.float32), int((tl["off"] + b["t"]) * sr))
+            k += 1
+        if cfg.get("sfx", True):
+            for a in tl["actions"]:
+                kind = a.get("sfx") or {"pop": "pop", "camera": "whoosh"}.get(a.get("do"))
+                if kind:
+                    try:
+                        AU.mix_at(fx, AU.sfx(kind, 0.7), int((tl["off"] + a["t0"]) * sr))
+                    except Exception:
+                        pass
+    mix = voice + fx * 0.5
+    style = cfg.get("music", "calm")
     if style in ("cheerful", "calm"):
         m = AU.music(n, style)
         fade = np.ones(n, np.float32)
-        fn = int(2.0 * sr)
+        fn = min(n, int(2.0 * sr))
         fade[-fn:] = np.linspace(1, 0, fn)
         mix = mix + m * 0.13 * fade
     mix /= max(1e-6, float(np.abs(mix).max())) / 0.9
@@ -649,19 +720,120 @@ def make_audio(plan, beats_spec, total, out_wav):
         w.writeframes((mix[: int(total * sr)] * 32767).astype(np.int16).tobytes())
 
 
-# ----------------------------------------------------------------- main
-def narrate(plan):
+def srt_time(t):
+    ms = int(round(t * 1000))
+    return f"{ms // 3600000:02d}:{ms // 60000 % 60:02d}:{ms // 1000 % 60:02d},{ms % 1000:03d}"
+
+
+def write_srt(tls, path):
+    rows, k = [], 1
+    for tl in tls:
+        for b in tl["beats"]:
+            if not b["caption"]:
+                continue
+            rows.append(f"{k}\n{srt_time(tl['off'] + b['t'])} --> {srt_time(tl['off'] + b['end'] - 0.05)}\n{b['caption']}\n")
+            k += 1
+    open(path, "w").write("\n".join(rows))
+
+
+def narrate(parts, cfg, rep=None):
     sys.path.insert(0, HERE)
     from tts import Voice, SR
     v = Voice()
     clips, durs = [], []
-    for step in plan["steps"]:
-        for b in step["beats"]:
-            clip = v.say(b.get("say", ""), plan.get("voice", "af_heart"), float(plan.get("speed", 0.92)))
-            sp = len(clip) / SR
-            clips.append(clip)
-            durs.append((sp, sp + float(b.get("pause", 0.35))))
+    beats = [b for p in parts for s in p["steps"] for b in s["beats"]]
+    for i, b in enumerate(beats):
+        clip = v.say(b.get("say", ""), cfg.get("voice", "af_heart"), float(cfg.get("speed", 0.92)))
+        sp = len(clip) / SR
+        clips.append(clip)
+        durs.append((sp, sp + float(b.get("pause", 0.35) if b.get("pause") is not None else 0.35)))
+        if rep:
+            rep.set("voice", 4 + 22 * (i + 1) / len(beats), f"Recording narration {i + 1}/{len(beats)}")
     return clips, durs
+
+
+class _NoRep:
+    def set(self, *a):
+        print(*a, flush=True)
+
+    def done(self, payload):
+        print("done", payload, flush=True)
+
+
+def run_job(plan, out_dir, rep=None, stills=None):
+    rep = rep or _NoRep()
+    os.makedirs(out_dir, exist_ok=True)
+    parts, cfg = parts_of(plan)
+    fps = cfg["fps"]
+    rep.set("voice", 3, "Warming up the voice")
+    cache = os.path.join(out_dir, "narration.npz")
+    key = json.dumps([[b.get("say") for s in p["steps"] for b in s["beats"]] for p in parts]) + str(cfg["voice"]) + str(cfg["speed"])
+    clips = durs = None
+    if os.path.exists(cache):
+        z = np.load(cache, allow_pickle=True)
+        if str(z["key"]) == key:
+            clips, durs = list(z["clips"]), [tuple(d) for d in z["durs"]]
+    if clips is None:
+        clips, durs = narrate(parts, cfg, rep)
+        np.savez(cache, key=key, clips=np.array(clips, dtype=object), durs=np.array(durs))
+    tls, total = part_timelines(parts, durs)
+    print(f"duration {total:.1f}s, {len(parts)} part(s), {len(clips)} beats", flush=True)
+    if stills is not None:
+        _init(tls)
+        for t in stills:
+            pi = max(i for i, tl in enumerate(tls) if tl["off"] <= t)
+            _R[pi].frame(t - tls[pi]["off"]).save(os.path.join(out_dir, f"still_{t:06.2f}.png"))
+        return None
+    rep.set("render", 28, "Drawing the diagram")
+    workers = int(os.environ.get("WORKERS", os.cpu_count() or 2))
+    jobs = []
+    for pi, tl in enumerate(tls):
+        nfr = int(math.ceil(tl["total"] * fps))
+        nch = max(1, min(40, round(nfr / 90)))
+        edges = [round(nfr * k / nch) for k in range(nch + 1)]
+        for k in range(nch):
+            jobs.append((len(jobs), pi, edges[k], edges[k + 1], fps, os.path.join(out_dir, f"c{len(jobs):03d}.mp4")))
+    total_frames = sum(j[3] - j[2] for j in jobs)
+    done_frames = 0
+    # biggest chunks first keeps all cores busy to the end
+    order = sorted(jobs, key=lambda j: -(j[3] - j[2]))
+    with Pool(workers, initializer=_init, initargs=(tls,)) as pool:
+        for _i, nf in pool.imap_unordered(_chunk, order):
+            done_frames += nf
+            rep.set("render", 28 + 60 * done_frames / max(1, total_frames),
+                    f"Animating frames {done_frames}/{total_frames}")
+    with open(os.path.join(out_dir, "list.txt"), "w") as f:
+        for j in jobs:
+            f.write(f"file '{os.path.basename(j[5])}'\n")
+    silent = os.path.join(out_dir, "silent.mp4")
+    subprocess.run([FFMPEG, "-loglevel", "error", "-y", "-f", "concat", "-safe", "0", "-i",
+                    os.path.join(out_dir, "list.txt"), "-c", "copy", silent], check=True)
+    rep.set("audio", 90, "Mixing voice, sound effects and music")
+    wav = os.path.join(out_dir, "mix.wav")
+    make_audio(cfg, tls, clips, total_frames / fps, wav)
+    rep.set("encode", 94, "Finishing the video file")
+    final = os.path.join(out_dir, "video.mp4")
+    tmp = final[:-4] + ".tmp.mp4"
+    subprocess.run([FFMPEG, "-loglevel", "error", "-y", "-i", silent, "-i", wav, "-map", "0:v", "-map", "1:a",
+                    "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
+                    "-shortest", "-movflags", "+faststart", tmp], check=True)
+    os.replace(tmp, final)
+    # thumbnail: a well-developed moment of the first diagram
+    r0 = Renderer(tls[0]["part"], tls[0]["beats"], tls[0]["actions"], tls[0]["headers"], tls[0]["total"])
+    tt = tls[0]["beats"][min(len(tls[0]["beats"]) - 1, max(0, len(tls[0]["beats"]) * 2 // 3))]["t"] + 1.2
+    im = r0.frame(min(tt, tls[0]["total"] - 1))
+    if im.width > im.height:
+        im = im.resize((1280, 720), Image.LANCZOS)
+    thumb = os.path.join(out_dir, "thumb.jpg")
+    im.save(thumb, quality=90)
+    srt = os.path.join(out_dir, "captions.srt")
+    write_srt(tls, srt)
+    for j in jobs:
+        try:
+            os.remove(j[5])
+        except OSError:
+            pass
+    return {"video": final, "thumb": thumb, "srt": srt, "duration": round(total_frames / fps, 2)}
 
 
 def main():
@@ -669,53 +841,10 @@ def main():
     stills = None
     if "--stills" in sys.argv:
         stills = [float(x) for x in sys.argv[sys.argv.index("--stills") + 1].split(",")]
-    os.makedirs(out_dir, exist_ok=True)
     plan = json.load(open(plan_path))
-    fps = int(plan.get("fps", 30))
-    cache = os.path.join(out_dir, "narration.npz")
-    say_key = json.dumps([[b.get("say") for b in s["beats"]] for s in plan["steps"]]) + plan.get("voice", "") + str(
-        plan.get("speed", 0.92))
-    clips = durs = None
-    if os.path.exists(cache):
-        z = np.load(cache, allow_pickle=True)
-        if str(z["key"]) == say_key:
-            clips = list(z["clips"])
-            durs = [tuple(d) for d in z["durs"]]
-    if clips is None:
-        clips, durs = narrate(plan)
-        np.savez(cache, key=say_key, clips=np.array(clips, dtype=object), durs=np.array(durs))
-    beats, actions, headers, total = build_timeline(plan, durs)
-    print(f"duration {total:.1f}s, {len(beats)} beats, {len(actions)} actions", flush=True)
-    args = (plan, beats, actions, headers, total)
-    if stills is not None:
-        r = Renderer(*args)
-        for t in stills:
-            r.frame(t).save(os.path.join(out_dir, f"still_{t:06.2f}.png"))
-        return
-    nfr = int(math.ceil(total * fps))
-    workers = int(os.environ.get("WORKERS", os.cpu_count() or 2))
-    nchunks = max(workers, min(24, nfr // 90))
-    edges = [round(nfr * k / nchunks) for k in range(nchunks + 1)]
-    jobs = [(k, edges[k], edges[k + 1], fps, os.path.join(out_dir, f"c{k:03d}.mp4")) for k in range(nchunks)]
-    with Pool(workers, initializer=_init, initargs=(args,)) as pool:
-        for i in pool.imap_unordered(_chunk, jobs):
-            print(f"chunk {i + 1}/{nchunks}", flush=True)
-    with open(os.path.join(out_dir, "list.txt"), "w") as f:
-        for j in jobs:
-            f.write(f"file '{os.path.basename(j[4])}'\n")
-    silent = os.path.join(out_dir, "silent.mp4")
-    subprocess.run([FFMPEG, "-loglevel", "error", "-y", "-f", "concat", "-safe", "0", "-i",
-                    os.path.join(out_dir, "list.txt"), "-c", "copy", silent], check=True)
-    plan["_actions"] = actions
-    wav = os.path.join(out_dir, "mix.wav")
-    make_audio(plan, list(zip(beats, clips)), total, wav)
-    final = os.path.join(out_dir, plan.get("out", "video.mp4"))
-    tmp = final[:-4] + ".tmp.mp4"
-    subprocess.run([FFMPEG, "-loglevel", "error", "-y", "-i", silent, "-i", wav, "-map", "0:v", "-map", "1:a",
-                    "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
-                    "-shortest", "-movflags", "+faststart", tmp], check=True)
-    os.replace(tmp, final)
-    print("done", final, flush=True)
+    res = run_job(plan, out_dir, stills=stills)
+    if res:
+        print("done", res, flush=True)
 
 
 if __name__ == "__main__":

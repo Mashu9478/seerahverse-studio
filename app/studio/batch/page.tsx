@@ -25,7 +25,7 @@ import { AGE_GROUPS, SHORT_DURATIONS, SUBJECTS, characterById } from "@/lib/cons
 import { api } from "@/lib/client";
 import { Button, IconButton, Modal, PageHeader, Segmented, Switch, cx } from "@/components/ui";
 import { StylePanel, StyleSummary, type StyleValue } from "@/components/StylePanel";
-import { styleFromSettings, useAppSettings } from "@/components/useAppSettings";
+import { styleToSettings, styleFromSettings, useAppSettings } from "@/components/useAppSettings";
 
 interface Row {
   key: string;
@@ -188,7 +188,7 @@ export default function BatchPage() {
             target_seconds: r.seconds,
             review,
             image_urls: [],
-            settings: { ...style, mascot: style.presenter !== "none" },
+            settings: styleToSettings(style),
           })),
         },
       });
@@ -378,7 +378,9 @@ export default function BatchPage() {
         <div className="space-y-4 xl:sticky xl:top-8 xl:self-start">
           <div className="card overflow-hidden">
             <button type="button" onClick={() => setStyleOpen(!styleOpen)} className="flex w-full items-center gap-3 p-5 text-left" aria-expanded={styleOpen}>
-              {presenter.id !== "none" ? (
+              {style?.style === "explainer" ? (
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-cyan-400/10 text-2xl ring-1 ring-cyan-300/30">🔬</span>
+              ) : presenter.id !== "none" ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={presenter.img} alt="" className="h-12 w-12 shrink-0 object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.6)]" />
               ) : (
@@ -386,7 +388,7 @@ export default function BatchPage() {
               )}
               <div className="min-w-0 flex-1">
                 <div className="text-[15px] font-semibold text-fg">Shared style</div>
-                <div className="truncate text-xs text-fg-subtle">Applies to every video · {presenter.id === "none" ? "no character" : `hosted by ${presenter.short}`}</div>
+                <div className="truncate text-xs text-fg-subtle">Applies to every video · {style?.style === "explainer" ? "diagram explainer" : presenter.id === "none" ? "no character" : `hosted by ${presenter.short}`}</div>
               </div>
               <ChevronDown className={cx("h-4 w-4 text-fg-subtle transition", styleOpen && "rotate-180")} />
             </button>
@@ -396,7 +398,7 @@ export default function BatchPage() {
                   <div className="space-y-4 border-t border-white/[0.06] px-5 pb-5 pt-4">
                     {style && <StyleSummary value={style} />}
                     <Button size="sm" variant="secondary" className="w-full" icon={<Settings2 className="h-4 w-4" />} onClick={() => setShowStyle(true)}>
-                      Change presenter, voice & look
+                      Change style, voice & look
                     </Button>
                   </div>
                 </motion.div>

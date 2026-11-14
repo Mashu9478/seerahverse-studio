@@ -216,8 +216,10 @@ export async function startRender(v: VideoRow, base: string): Promise<void> {
     started_at: new Date().toISOString(),
     error: null,
   });
+  // Diagram explainers draw every frame from vector art: ask for more cores (falls back to the default if refused).
+  const wantVcpus = v.plan.style === "explainer" ? 8 : RENDER_VCPUS;
   const common = {
-    resources: { vcpus: RENDER_VCPUS },
+    resources: { vcpus: wantVcpus },
     timeout: RENDER_TIMEOUT_MS,
     persistent: false,
     tags: { app: "svstudio", role: "render", video: v.id.slice(0, 32) },
@@ -234,7 +236,15 @@ export async function startRender(v: VideoRow, base: string): Promise<void> {
       console.warn("snapshot start failed, using a fresh machine", e instanceof Error ? e.message : e);
     }
   }
-  if (!sb) sb = await Sandbox.create(common);
+  if (!sb) {
+    try {
+      sb = await Sandbox.create(common);
+    } catch (e) {
+      if (wantVcpus === RENDER_VCPUS) throw e;
+      console.warn("bigger render machine refused, using the default size", e instanceof Error ? e.message : e);
+      sb = await Sandbox.create({ ...common, resources: { vcpus: RENDER_VCPUS } });
+    }
+  }
   await updateVideo(v.id, { sandbox_id: sb.name, message: fromSnapshot ? "Loading the animation engine…" : "Setting up the animation engine…", progress: 2 });
   const files = await engineFiles();
   files.push({

@@ -395,7 +395,16 @@ def main(plan_path, out_dir):
         os.makedirs(out_dir, exist_ok=True)
         parts = os.path.join(out_dir, "parts")
         os.makedirs(parts, exist_ok=True)
-        plan = normalize_plan(json.load(open(plan_path)))
+        raw = json.load(open(plan_path))
+        if raw.get("style") == "explainer" or raw.get("explainer"):
+            import explainer
+            explainer.FFMPEG = FFMPEG
+            res = explainer.run_job(raw, out_dir, rep)
+            rep.set("encode", 100, f"Done in {time.time() - t_start:.0f}s")
+            rep.done({"ok": True, "duration": res["duration"], "render_seconds": round(time.time() - t_start, 1),
+                      "files": {"video": res["video"], "thumb": res["thumb"], "srt": res["srt"]}})
+            return
+        plan = normalize_plan(raw)
         ctx = ctx_for(plan)
         rep.set("voice", 2, "Warming up the voice")
         audio = make_voice(plan, rep)

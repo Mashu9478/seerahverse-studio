@@ -17,8 +17,12 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (!v) return jsonError("Video not found", 404);
   const body = Body.safeParse(await req.json().catch(() => null));
   if (!body.success) return jsonError("Bad request");
+  const raw = body.data.plan as { style?: string; explainer?: unknown } | null;
+  if (raw?.style === "explainer" || raw?.explainer || v.settings?.style === "explainer")
+    return jsonError("Scene rewrite isn't available for diagram videos yet — edit the narration or regenerate the whole script.", 400);
   const plan = PlanSchema.safeParse(body.data.plan);
   if (!plan.success) return jsonError("Fix the highlighted problems in the script first, then try again.");
+  if (plan.data.style === "explainer") return jsonError("Diagram explainer scripts can't be rewritten scene by scene — use Regenerate.");
   if (body.data.index >= plan.data.scenes.length) return jsonError("That scene doesn't exist.");
   const app = await getAppSettings();
   try {

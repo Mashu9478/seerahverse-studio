@@ -3,7 +3,7 @@ import { del } from "@vercel/blob";
 import { PUBLIC_COLS, getVideo, q, q1, updateVideo } from "@/lib/db";
 import { handle, jsonError } from "@/lib/http";
 import { stopSandbox } from "@/lib/sandbox";
-import { YoutubeSchema } from "@/lib/plan";
+import { ExplainerSchema, YoutubeSchema, describeIssues } from "@/lib/plan";
 
 export const dynamic = "force-dynamic";
 type Ctx = { params: Promise<{ id: string }> };
@@ -23,8 +23,13 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const patch: Record<string, unknown> = {};
   if (body.plan !== undefined) {
-    if (!body.plan || typeof body.plan !== "object" || !Array.isArray((body.plan as { scenes?: unknown }).scenes))
+    const pl = body.plan as { scenes?: unknown; style?: unknown; explainer?: unknown } | null;
+    if (!pl || typeof pl !== "object" || !Array.isArray(pl.scenes))
       return jsonError("The script is not valid JSON with a scenes list.");
+    if (pl.style === "explainer" || pl.explainer !== undefined) {
+      const ex = ExplainerSchema.safeParse(pl.explainer);
+      if (!ex.success) return jsonError("The diagram script is not valid: " + (describeIssues(ex.error)[0] ?? "check the JSON"));
+    }
     if (["rendering", "uploading", "queued"].includes(v.status)) return jsonError("This video is rendering — wait or cancel it first.");
     patch.plan = body.plan;
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Clock3, ImageIcon, Mic2, Music2, Smartphone, MonitorPlay } from "lucide-react";
+import { Clapperboard, Clock3, ImageIcon, Mic2, Music2, Smartphone, MonitorPlay } from "lucide-react";
 import { AGE_GROUPS, MUSIC, SUBJECTS, VOICES, characterById } from "@/lib/constants";
 import { fmtDuration } from "@/lib/plan";
 import type { StyleValue } from "../StylePanel";
@@ -35,18 +35,30 @@ export function LiveSummary({
   style: StyleValue | null;
 }) {
   const presenter = characterById(style?.presenter || (style?.mascot === false ? "none" : "ollie"));
+  const explainer = style?.style === "explainer";
   const voice = VOICES.find((v) => v.id === style?.voice);
   const music = MUSIC.find((m) => m.id === style?.music);
   const subj = SUBJECTS.find((s) => s.id === subject);
   const ageG = AGE_GROUPS.find((a) => a.id === age);
   return (
     <div className="card relative overflow-hidden p-5">
-      <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full blur-3xl" style={{ background: `${presenter.color}55` }} />
+      <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full blur-3xl" style={{ background: explainer ? "#22D3EE44" : `${presenter.color}55` }} />
       <div className="relative">
         <div className="eyebrow">Live preview</div>
         <div className="mt-4 flex items-center gap-4">
           <div className="relative grid h-24 w-24 shrink-0 place-items-center rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.01]">
             <AnimatePresence mode="wait">
+              {explainer ? (
+                <motion.span
+                  key="explainer"
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.6, opacity: 0 }}
+                  className="text-5xl"
+                >
+                  🔬
+                </motion.span>
+              ) : (
               <motion.img
                 key={presenter.id}
                 src={presenter.img}
@@ -57,11 +69,12 @@ export function LiveSummary({
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className="h-20 w-20 animate-floaty object-contain drop-shadow-[0_12px_20px_rgba(0,0,0,0.6)]"
               />
+              )}
             </AnimatePresence>
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">Presented by</div>
-            <div className="font-display text-base font-semibold text-fg">{presenter.id === "none" ? "No character" : presenter.name}</div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">{explainer ? "Video style" : "Presented by"}</div>
+            <div className="font-display text-base font-semibold text-fg">{explainer ? "Diagram explainer" : presenter.id === "none" ? "No character" : presenter.name}</div>
           </div>
         </div>
 
@@ -86,6 +99,7 @@ export function LiveSummary({
             label="Format"
             value={fmt.format === "short" ? "Short · 9:16" : "Long · 16:9"}
           />
+          <Row icon={<Clapperboard className="h-4 w-4" />} label="Style" value={explainer ? "🔬 Diagram explainer" : "🎭 Character presenter"} />
           <Row icon={<Clock3 className="h-4 w-4" />} label="Length" value={fmtDuration(fmt.target_seconds)} />
           <Row icon={<Mic2 className="h-4 w-4" />} label="Voice" value={voice ? `${voice.emoji} ${voice.name}` : "—"} />
           <Row icon={<Music2 className="h-4 w-4" />} label="Sound" value={music ? `${music.emoji} ${music.name}` : "—"} />

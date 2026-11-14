@@ -3,6 +3,10 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 import { characterById } from "./constants";
 import {
+  EXPLAINER_ACTIONS,
+  YoutubeSchema,
+  type ExplainerAction,
+  type ExplainerPart,
   AiOutlineSchema,
   AiScenesSchema,
   AiScriptSchema,
@@ -17,6 +21,8 @@ import {
 } from "./plan";
 import { TWEMOJI_CREDIT } from "./constants";
 import type { VideoRow } from "./db";
+import { STAGE_DIMS, sanitizeExplainer, sanitizeStage } from "./explainer";
+import { EXPLAINER_EXAMPLE_JSON } from "./explainer-example";
 
 const AGE_GUIDE: Record<string, string> = {
   "4-5": "Ages 4–5: tiny words, 3–7 word sentences, lots of repetition, sing-song rhythm, count slowly, one idea per scene, constant praise.",
@@ -166,6 +172,7 @@ export async function generateScript(
   modelId: string,
   onProgress?: (msg: string) => Promise<void>,
 ): Promise<{ plan: VideoPlan; youtube: YoutubeMeta; warnings: string[] }> {
+  if (v.settings?.style === "explainer") return generateExplainer(v, modelId, onProgress);
   const g = genInputFromVideo(v);
   let title: string;
   let scenes: Scene[];
@@ -287,4 +294,314 @@ export async function aiPing(modelId: string) {
     abortSignal: AbortSignal.timeout(60_000),
   });
   return r.object;
+}
+
+/* ------------------------------------------------------------------ */
+/* Diagram explainer                                                    */
+/* ------------------------------------------------------------------ */
+
+/** AI-facing schemas: lenient (everything optional, no unions / open objects); code cleans up afterwards. */
+const AiExplainerAction = z.object({
+  do: z.enum(EXPLAINER_ACTIONS),
+  id: z.string().optional().describe("Part id (show/hide/pop/wipe/move/scale/fill) or label id (label/unlabel, '*' = all labels)"),
+  at: z.number().optional().describe("Seconds after this beat's narration starts"),
+  word: z.string().optional().describe("Alternative to at: start when this exact word of the beat's 'say' is spoken"),
+  dur: z.number().optional(),
+  dir: z.enum(["up", "down", "left", "right"]).optional(),
+  box: z.array(z.number()).nullable().optional(),
+  to: z.array(z.number()).optional().describe("move: [dx, dy]"),
+  factor: z.number().optional().describe("scale: size factor"),
+  origin: z.array(z.number()).optional(),
+  color: z.string().optional(),
+  text: z.string().optional(),
+  point: z.array(z.number()).optional(),
+  side: z.enum(["left", "right"]).optional(),
+  len: z.number().optional(),
+  dy: z.number().optional(),
+  path: z.array(z.array(z.number())).optional(),
+  count: z.number().optional(),
+  speed: z.number().optional(),
+  r: z.number().optional(),
+  shape: z.enum(["dot", "steam"]).optional(),
+  layer: z.string().optional(),
+  sfx: z.string().optional(),
+});
+const AiExplainerBeat = z.object({
+  say: z.string(),
+  caption: z.string().optional(),
+  pause: z.number().optional(),
+  actions: z.array(AiExplainerAction),
+});
+const AiExplainerStep = z.object({
+  tag: z.string().optional().describe('"Step 1 / 3" for teaching steps; leave out for the intro and recap'),
+  title: z.string(),
+  highlight: z.string().optional(),
+  beats: z.array(AiExplainerBeat),
+});
+const AiExplainerPart = z.object({
+  stage: z.string().describe("The complete SVG drawing (draw this FIRST)"),
+  hidden: z.array(z.string()),
+  camera: z.array(z.number()).nullable().optional(),
+  steps: z.array(AiExplainerStep),
+});
+const AiExplainerTheme = z.object({
+  bg: z.string().optional(),
+  ink: z.string().optional(),
+  label: z.string().optional(),
+  accent: z.string().optional(),
+});
+const AiExplainerShortSchema = z.object({
+  title: z.string(),
+  youtube: YoutubeSchema,
+  theme: AiExplainerTheme.optional(),
+  part: AiExplainerPart,
+});
+const AiExplainerOutlineSchema = z.object({
+  title: z.string(),
+  youtube: YoutubeSchema,
+  theme: AiExplainerTheme.optional(),
+  parts: z
+    .array(
+      z.object({
+        name: z.string(),
+        object: z.string().describe("The ONE object/diagram drawn in this part, e.g. 'cutaway of the human heart'"),
+        goal: z.string().describe("What this part explains, step by step"),
+        seconds: z.number(),
+      }),
+    )
+    .describe("2-6 consecutive parts covering the whole video"),
+});
+const AiExplainerPartOnly = z.object({ part: AiExplainerPart });
+
+type AiPart = z.infer<typeof AiExplainerPart>;
+
+function toExplainerPart(p: AiPart): ExplainerPart {
+  return {
+    stage: p.stage,
+    hidden: p.hidden ?? [],
+    camera: p.camera ?? null,
+    steps: (p.steps ?? []).map((s) => ({
+      ...(s.tag ? { tag: s.tag } : {}),
+      title: s.title,
+      ...(s.highlight ? { highlight: s.highlight } : {}),
+      beats: (s.beats ?? []).map((b) => ({
+        say: b.say,
+        ...(b.caption ? { caption: b.caption } : {}),
+        ...(b.pause != null ? { pause: b.pause } : {}),
+        actions: (b.actions ?? []).map((a) => {
+          const { factor, ...rest } = a;
+          const out: Record<string, unknown> = { ...rest };
+          if (a.do === "scale") out.to = factor ?? a.to?.[0];
+          for (const k of Object.keys(out)) if (out[k] === undefined) delete out[k];
+          return out as ExplainerAction;
+        }),
+      })),
+    })),
+  };
+}
+
+function explainerSystemPrompt(format: "long" | "short") {
+  const [W, H] = STAGE_DIMS[format];
+  const portrait = format === "short";
+  const safe = portrait
+    ? "Keep everything important between y≈420 and y≈1600 (the step title covers the top ~22% of the screen and captions the bottom ~20%). Horizontally keep it within x≈60–1020."
+    : "Keep everything important between y≈230 and y≈880 (the step title covers the top of the screen and captions the bottom). Horizontally keep it within x≈80–1840.";
+  return `You are the head scriptwriter AND illustrator for a family-friendly educational YouTube channel (with Islamic values) that makes animated learning videos for children. Only mention the channel by the CHANNEL name given in the brief, and only where natural.
+
+This video uses the DIAGRAM EXPLAINER style: no cartoon presenter. A warm teacher's voice narrates while ONE illustrated object (per part) stays on screen and changes step by step to show HOW IT WORKS — like a top-quality animated textbook infographic. You produce the SVG drawing AND the timed animation script that an engine renders.
+
+VISUAL STYLE
+- Flat, clean, illustrated cross-section / cutaway diagram (e.g. a tooth cut in half, a plant with soil cut away, a heart opened up, a volcano sliced, a bicycle gear system). Show the INSIDE so kids can see how it works.
+- Calm muted background (light grey-blue sky like #EEF2F4, soft ground/surroundings), bright but harmonious colours for the object, dark outlines 4–6 px (stroke-linejoin round), simple gradients allowed. No text inside the SVG (the engine draws titles and labels).
+- Draw the object LARGE and centred. ${safe}
+- Extend background rectangles well beyond the viewBox (e.g. x=-600, width +1200) so camera zooms never reveal empty edges.
+
+SVG RULES (the engine parses it with a strict XML parser)
+- Root: <svg viewBox="0 0 ${W} ${H}"> (${portrait ? "portrait 9:16" : "landscape 16:9"}). Well-formed XML: every tag closed, attributes quoted, no HTML entities.
+- Only: g, path, rect, circle, ellipse, line, polyline, polygon, linearGradient, radialGradient, stop, defs, clipPath. No text, image, script, filter, foreignObject, CSS classes or <style>. Use presentation attributes (fill="#..." stroke="#..."), hex colours only.
+- Every part you will animate or talk about is a <g id="kebab-case-id"> group (e.g. "roots", "root-hairs", "stem-cut", "leaf-left"). Ids are unique. Put "inside" details (tubes, chambers, layers) in their own groups so they can be revealed.
+- Paint order = what is in front: later elements cover earlier ones.
+- Include an empty <g id="flowlayer"/> where moving particles should appear (usually just above the object parts they move through), and reference it with "layer":"flowlayer" in flow actions.
+- Keep the SVG compact (ideally under 12 KB): combine repeated small strokes into one path with many "M…L…" segments; round coordinates to whole numbers.
+
+ANIMATION SCRIPT
+parts → steps → beats. Each beat has "say" (narration, 1–2 short sentences) and "actions" that happen while it is spoken.
+- Step "title": big header (≤ 30 characters), "highlight": the key word(s) of the title to colour. "tag": "Step 1 / N" for teaching steps; NO tag for the opening question and the final recap.
+- Timing: "word": an exact word from that beat's "say" (the action starts when it's spoken), or "at": seconds after the beat starts. "dur": animation seconds (default 0.6).
+- "hidden": ids invisible at the start; reveal them later with show / pop / wipe. Hide parts that will be revealed as the explanation goes on (that is what makes it engaging).
+- "camera" (part level): starting view [x, y, width] or null for the whole stage.
+ACTIONS ("do"):
+- show {id}: fade in (slight rise). hide {id}: fade out.
+- pop {id, origin:[x,y]}: grow from the origin point with a bounce.
+- wipe {id, dir, box:[x,y,w,h]}: reveal the part progressively as if it grows: dir "down" reveals top→bottom (roots growing), "up" bottom→top (a stem, water level rising), "right" left→right, "left" right→left. box = the area the part covers.
+- move {id, to:[dx,dy]}: slide the part to an offset from where it was drawn (stays there). Use it for tools, pistons, valves, a moving moon, etc.
+- scale {id, factor, origin:[x,y]}: grow/shrink (e.g. a muscle contracting, a balloon inflating).
+- fill {id, color}: smoothly recolour the part (e.g. blood turning from blue to red, a leaf turning yellow, metal heating up).
+- camera {box:[x,y,width]} zooms to that region (height follows the frame shape: height = width × ${portrait ? "1.78" : "0.5625"}), box null = whole stage. The explained part must sit in the MIDDLE of the box (between 22% and 80% of the box height from its top), because the title and captions cover the top and bottom. Zoom in to show detail, zoom out to show the whole. Move the camera at most once per beat; dur 1.2–1.6.
+- label {id:"l-name", text, point:[x,y], side:"left"|"right", len, dy}: a small UPPERCASE label (1–3 words) with a leader line from point (stage coordinates, ON the part) to the text; len = line length and dy = vertical offset, both in SCREEN pixels (the screen is ${W} px wide). Make sure the text (~20 px per letter) stays on screen at the current camera. Max 3 labels at once.
+- unlabel {id} (or id "*" for all): remove labels — always before the camera moves away from them.
+- flow {path:[[x,y],…], count, speed, dur, r, color, shape:"dot"|"steam", layer:"flowlayer"}: particles travel along the polyline path (stage coordinates) — water, blood, air, food, electricity, heat, light. speed = seconds for one particle to travel the whole path; count = particles on the path at once; dur = how long new particles keep coming (use a long dur like 30 for a continuous flow). Paths must follow the drawn channels exactly (through the tube, artery, wire…). "steam" = rising wavy puffs (vapour, smell, heat).
+- pulse {point:[x,y], r, color}: rings that draw attention to a spot.
+- Optional "sfx" on any action: pop | whoosh | sparkle | ding | plop.
+Every coordinate (label points, flow paths, camera boxes, wipe boxes, origins) MUST match where you actually drew things.
+
+TEACHING RULES
+- Structure per video: opening question/hook step (no tag) → 2–5 tagged steps that build the explanation in order → a short recap step (no tag) that names the parts again.
+- Everything must be factually correct and reflect current scientific understanding (no outdated textbook claims). Simplify for the age, but never say something false.
+- "say" is read by a text-to-speech voice: write numbers as words, no symbols, abbreviations, emojis or brackets. Short natural sentences with energy. Talk to the child ("Look!", "Can you see…?").
+- Each important new part gets revealed, labelled and/or animated exactly when it is mentioned.
+- Islamic touches must be natural and brief (e.g. "SubhanAllah, look how Allah designed…" or one well-known ayah with exact reference in the caption, only if you are certain of it). Never write Arabic script. No music references.
+- Never mention that you are an AI. No URLs.
+- Follow attached textbook photos closely when provided.
+
+YOUTUBE METADATA
+- title: catchy, clear, ≤ 70 characters, includes the topic and age.
+- description: 3 short paragraphs + key moments. No links. tags: 10–15. hashtags: 3–5 (${portrait ? "include #Shorts" : "no #Shorts"}).
+
+EXAMPLE (a portrait Short; the drawing is simplified here — yours should be at least as rich, with the same care for matching coordinates):
+${EXPLAINER_EXAMPLE_JSON}`;
+}
+
+function explainerBrief(g: GenInput, extra = "") {
+  const words = targetWords(g.target_seconds, g.speed);
+  const fmt =
+    g.format === "short"
+      ? `YouTube SHORT (vertical ${STAGE_DIMS.short.join("×")}). Target length ${g.target_seconds} seconds — strict. ONE object/diagram, 3–6 steps in total including the opening and recap. Hook in the first 2 seconds.`
+      : `LONG video (landscape ${STAGE_DIMS.long.join("×")}). Target length about ${Math.round(g.target_seconds / 60)} minutes, split into parts — each part has its own object/diagram.`;
+  return `Write the diagram-explainer video.
+
+TOPIC: ${g.topic}
+SUBJECT: ${g.subject}
+AUDIENCE: ${AGE_GUIDE[g.age_group] ?? AGE_GUIDE["6-7"]}
+FORMAT: ${fmt}
+LENGTH TARGET: about ${words} spoken words in total across all beats (±10%).
+CHANNEL: ${g.channel}. Islamic greeting allowed: ${g.greeting ? "yes (one short 'Assalamu alaikum' at the very start)" : "no"}. Ask to like & subscribe at the end: ${g.subscribe ? "yes, one short sentence" : "no"}.
+${g.details ? `TEACHER'S DETAILS / LEARNING GOALS:\n${g.details}\n` : ""}${g.image_urls.length ? `${g.image_urls.length} textbook page photo(s) are attached — base the lesson on them.\n` : ""}${extra}`;
+}
+
+/** Generate one part; if the drawing is unusable, try once more with the error (within the same time budget). */
+async function explainerPartWithRetry<T extends { part: AiPart }>(
+  run: (fix: string, timeoutMs: number) => Promise<T>,
+  format: "long" | "short",
+  label: string,
+  budgetMs: number,
+): Promise<T> {
+  const t0 = Date.now();
+  const first = await run("", budgetMs);
+  try {
+    sanitizeStage(first.part.stage, format, label);
+    return first;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    const left = budgetMs - (Date.now() - t0);
+    if (left < 70_000) throw e;
+    return run(`\nIMPORTANT: a previous attempt produced an unusable drawing (${msg}). Draw a valid, well-formed SVG this time.`, left);
+  }
+}
+
+/** Write a diagram-explainer script (style === "explainer"). */
+export async function generateExplainer(
+  v: VideoRow,
+  modelId: string,
+  onProgress?: (msg: string) => Promise<void>,
+): Promise<{ plan: VideoPlan; youtube: YoutubeMeta; warnings: string[] }> {
+  const g = genInputFromVideo(v);
+  // Every frame of a diagram video is drawn from vector art: keep long ones within the render time limit.
+  if (g.target_seconds > 480) g.target_seconds = 480;
+  const instructions = explainerSystemPrompt(g.format);
+  let title: string;
+  let youtube: YoutubeMeta;
+  let theme: z.infer<typeof AiExplainerTheme> | undefined;
+  let parts: ExplainerPart[];
+
+  if (g.format === "short") {
+    await onProgress?.("Drawing the diagram and writing the script…");
+    const res = await explainerPartWithRetry(
+      async (fix, ms) =>
+        (
+          await generateObject({
+            model: model(modelId),
+            schema: AiExplainerShortSchema,
+            instructions,
+            messages: userMessage(g, explainerBrief(g, fix)),
+            maxOutputTokens: 16000,
+            abortSignal: AbortSignal.timeout(ms),
+            maxRetries: 1,
+          })
+        ).object,
+      "short",
+      "The drawing",
+      TIMEOUT,
+    );
+    title = res.title;
+    youtube = res.youtube;
+    theme = res.theme;
+    parts = [toExplainerPart(res.part)];
+  } else {
+    await onProgress?.("Planning the diagrams…");
+    const outline = await generateObject({
+      model: model(modelId),
+      schema: AiExplainerOutlineSchema,
+      instructions,
+      messages: userMessage(
+        g,
+        explainerBrief(
+          g,
+          `\nFIRST produce only an OUTLINE: 2–6 consecutive parts whose seconds add up to ${g.target_seconds}. Each part explains one thing with ONE object/diagram (a different drawing per part, or the same object at a different zoom/state). Part 1 opens with the hook; the last part ends with the recap.`,
+        ),
+      ),
+      maxOutputTokens: 3000,
+      abortSignal: AbortSignal.timeout(90_000),
+      maxRetries: 2,
+    });
+    const plan = outline.object.parts.slice(0, 6);
+    if (!plan.length) throw new Error("The AI didn't plan any parts — please press Retry.");
+    title = outline.object.title;
+    youtube = outline.object.youtube;
+    theme = outline.object.theme;
+    await onProgress?.(`Drawing ${plan.length} diagrams in parallel…`);
+    const outlineText = plan.map((p, i) => `${i + 1}. ${p.name} (${Math.round(p.seconds)}s) — object: ${p.object}. ${p.goal}`).join("\n");
+    const results = await Promise.all(
+      plan.map((p, i) =>
+        explainerPartWithRetry(
+          async (fix, ms) =>
+            (
+              await generateObject({
+                model: model(modelId),
+                schema: AiExplainerPartOnly,
+                instructions,
+                messages: userMessage(
+                  g,
+                  explainerBrief(
+                    g,
+                    `\nThe full video outline is:\n${outlineText}\n\nNOW DRAW AND WRITE ONLY PART ${i + 1} ("${p.name}") — object: ${p.object}. ${p.goal}\nThis part lasts about ${Math.round(p.seconds)} seconds ≈ ${targetWords(p.seconds, g.speed)} spoken words. Number its tagged steps within this part ("Step 1 / N").${
+                      i === 0 ? " This is the FIRST part: start with the hook/opening step (no tag)." : " Do NOT add a greeting or a video intro; start with a short step that introduces this part's object."
+                    }${i === plan.length - 1 ? " This is the LAST part: end with a recap step (no tag) covering the whole video." : " Do NOT add a final recap or goodbye."}${fix}`,
+                  ),
+                ),
+                maxOutputTokens: 16000,
+                abortSignal: AbortSignal.timeout(ms),
+                maxRetries: 1,
+              })
+            ).object,
+          "long",
+          `Diagram ${i + 1}`,
+          TIMEOUT - 100_000,
+        ),
+      ),
+    );
+    parts = results.map((r) => toExplainerPart(r.part));
+  }
+
+  const { explainer, warnings } = sanitizeExplainer({ ...(theme ? { theme } : {}), parts }, g.format);
+  const plan = planShell({
+    title,
+    format: g.format,
+    target_seconds: g.target_seconds,
+    age_group: g.age_group,
+    settings: v.settings,
+    scenes: [],
+    explainer,
+  });
+  return { plan, youtube: finishYoutube(youtube, g.format), warnings };
 }
