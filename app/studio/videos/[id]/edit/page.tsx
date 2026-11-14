@@ -1,75 +1,121 @@
 "use client";
 
 import Link from "next/link";
-import { use, useCallback, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { AlertTriangle, ArrowLeft, Braces, Copy, GripVertical, Plus, RefreshCw, Rocket, Save, Settings2, Trash2, Wand2, MonitorPlay as Youtube } from "lucide-react";
+import { arrayMove } from "@dnd-kit/sortable";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Braces,
+  Check,
+  CircleAlert,
+  Clock,
+  CloudOff,
+  Loader2,
+  PanelRightClose,
+  PanelRightOpen,
+  Palette,
+  RefreshCw,
+  Rocket,
+  Sparkles,
+  Wand2,
+  MonitorPlay as Youtube,
+} from "lucide-react";
 import { toast } from "sonner";
-import { SCENE_TYPES } from "@/lib/constants";
+import { SCENE_TYPES, STATUS_META } from "@/lib/constants";
 import { ApiError, api, type VideoFull } from "@/lib/client";
-import { PlanSchema, blankScene, describeIssues, fmtDuration, planSeconds, planWords, sceneSeconds, type Scene, type VideoPlan, type YoutubeMeta } from "@/lib/plan";
-import { Badge, Button, Card, Modal, Skeleton, cx } from "@/components/ui";
+import {
+  PlanSchema,
+  blankScene,
+  describeIssues,
+  fmtDuration,
+  planSeconds,
+  planWords,
+  sceneSeconds,
+  type Scene,
+  type VideoPlan,
+  type YoutubeMeta,
+} from "@/lib/plan";
+import { Badge, Button, Card, IconButton, Modal, Segmented, Skeleton, cx } from "@/components/ui";
 import { SceneForm } from "@/components/editor/SceneForm";
+import { SceneList, typeMeta } from "@/components/editor/SceneList";
+import { YoutubePanel } from "@/components/editor/YoutubePanel";
 import { StylePanel, type StyleValue } from "@/components/StylePanel";
 import { FormatPicker } from "@/components/FormatPicker";
-import { StatusBadge } from "@/components/VideoCard";
 
-const typeMeta = (t: string) => SCENE_TYPES.find((s) => s.type === t) ?? SCENE_TYPES[0];
+type SideTab = "style" | "youtube" | "warnings" | "json";
+type SaveState = "saved" | "saving" | "unsaved" | "error";
 
-function sceneLabel(s: Scene): string {
-  switch (s.type) {
-    case "title":
-    case "outro":
-      return s.title;
-    case "quiz":
-      return s.question;
-    default:
-      return "heading" in s ? s.heading : "";
-  }
+function StatusPill({ status }: { status: string }) {
+  const m = STATUS_META[status] ?? STATUS_META.draft;
+  const live = ["scripting", "queued", "rendering", "uploading"].includes(status);
+  return (
+    <Badge className={m.color}>
+      {live ? <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" /> : <span>{m.emoji}</span>}
+      {m.label}
+    </Badge>
+  );
 }
 
-function SceneItem({ id, scene, index, active, speed, onSelect, onDup, onDel }: { id: string; scene: Scene; index: number; active: boolean; speed: number; onSelect: () => void; onDup: () => void; onDel: () => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-  const m = typeMeta(scene.type);
+function SaveIndicator({ state, onRetry }: { state: SaveState; onRetry: () => void }) {
+  const map = {
+    saved: { icon: <Check className="h-3.5 w-3.5" />, text: "Saved", cls: "text-emerald-300" },
+    saving: { icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />, text: "Saving…", cls: "text-fg-muted" },
+    unsaved: { icon: <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />, text: "Unsaved", cls: "text-amber-300" },
+    error: { icon: <CloudOff className="h-3.5 w-3.5" />, text: "Not saved — retry", cls: "text-rose-300" },
+  }[state];
   return (
-    <div
-      ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={cx(
-        "group flex items-center gap-2 rounded-2xl border-2 bg-white p-2 pr-1 transition",
-        active ? "border-brand-500 shadow-pop" : "border-transparent hover:border-brand-200",
-        isDragging && "z-10 opacity-80 shadow-xl",
-      )}
-    >
-      <button {...attributes} {...listeners} aria-label="Drag to reorder" className="cursor-grab touch-none rounded-lg p-1 text-slate-300 hover:text-brand-500 active:cursor-grabbing">
-        <GripVertical className="h-4 w-4" />
-      </button>
-      <button onClick={onSelect} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
-        <span className={cx("grid h-10 w-10 shrink-0 place-items-center rounded-xl text-xl", active ? "bg-brand-500" : "bg-brand-50")}>{m.emoji}</span>
-        <span className="min-w-0">
-          <span className="block text-[11px] font-bold uppercase tracking-wide text-brand-500">
-            {index + 1}. {m.name} · {Math.round(sceneSeconds(scene, speed))}s
+    <AnimatePresence mode="wait">
+      <motion.button
+        key={state}
+        type="button"
+        onClick={state === "error" || state === "unsaved" ? onRetry : undefined}
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        className={cx("flex items-center gap-1.5 text-xs font-semibold", map.cls)}
+      >
+        {map.icon}
+        {map.text}
+      </motion.button>
+    </AnimatePresence>
+  );
+}
+
+/** Estimated duration vs target with colour states. */
+function DurationMeter({ total, target, short }: { total: number; target: number; short: boolean }) {
+  const ratio = total / Math.max(1, target);
+  const over = ratio > (short ? 1.08 : 1.2);
+  const under = ratio < 0.75;
+  const tone = over ? "#FB7185" : under ? "#FBBF24" : "#34D399";
+  const msg = over ? "Too long" : under ? "A bit short" : "On target";
+  return (
+    <div className="flex min-w-[210px] items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-1.5">
+      <Clock className="h-4 w-4 shrink-0" style={{ color: tone }} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline justify-between gap-2 text-[11px] font-semibold">
+          <span className="tabular-nums text-fg">
+            ~{fmtDuration(total)} <span className="text-fg-subtle">/ {fmtDuration(target)}</span>
           </span>
-          <span className="block truncate text-sm font-semibold">{sceneLabel(scene) || scene.beats[0]?.say || "—"}</span>
-        </span>
-      </button>
-      <div className="flex flex-col opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
-        <button onClick={onDup} aria-label="Duplicate scene" className="rounded-lg p-1 text-brand-500 hover:bg-brand-50">
-          <Copy className="h-3.5 w-3.5" />
-        </button>
-        <button onClick={onDel} aria-label="Delete scene" className="rounded-lg p-1 text-red-500 hover:bg-red-50">
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
+          <span style={{ color: tone }}>{msg}</span>
+        </div>
+        <div className="relative mt-1 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+          <motion.div
+            className="absolute inset-y-0 left-0 rounded-full"
+            style={{ background: tone, boxShadow: `0 0 10px ${tone}` }}
+            initial={false}
+            animate={{ width: `${Math.min(100, ratio * (100 / 1.25))}%` }}
+            transition={{ type: "spring", stiffness: 120, damping: 22 }}
+          />
+          {/* target marker */}
+          <span className="absolute inset-y-0 w-px bg-white/50" style={{ left: `${100 / 1.25}%` }} />
+        </div>
       </div>
     </div>
   );
 }
-
-type Tab = "scene" | "youtube" | "settings" | "json";
 
 export default function EditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -79,17 +125,18 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
   const [yt, setYt] = useState<YoutubeMeta>({ title: "", description: "", tags: [], hashtags: [] });
   const [keys, setKeys] = useState<string[]>([]);
   const [sel, setSel] = useState(0);
-  const [tab, setTab] = useState<Tab>("scene");
+  const [side, setSide] = useState<SideTab>("style");
+  const [sideOpen, setSideOpen] = useState(true);
   const [dirty, setDirty] = useState(false);
+  const [saveState, setSaveState] = useState<SaveState>("saved");
   const [busy, setBusy] = useState("");
   const [issues, setIssues] = useState<string[] | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [regenOpen, setRegenOpen] = useState(false);
   const [instruction, setInstruction] = useState("");
   const [jsonText, setJsonText] = useState("");
-  const [showWarnings, setShowWarnings] = useState(true);
-
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+  const [jsonError, setJsonError] = useState<string | null>(null);
+  const version = useRef(0);
 
   const load = useCallback(async () => {
     try {
@@ -98,9 +145,11 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
       if (r.video.plan) {
         setPlan(r.video.plan);
         setKeys(r.video.plan.scenes.map((_, i) => `s${i}-${Date.now()}`));
+        setJsonText(JSON.stringify(r.video.plan, null, 2));
       }
       if (r.video.youtube) setYt(r.video.youtube);
       setDirty(false);
+      setSaveState("saved");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't load");
     }
@@ -129,9 +178,18 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
   const words = useMemo(() => (plan ? planWords(plan) : 0), [plan]);
   const locked = !!video && ["queued", "rendering", "uploading"].includes(video.status);
 
+  function markDirty() {
+    version.current += 1;
+    setDirty(true);
+    setSaveState("unsaved");
+  }
   function change(p: VideoPlan) {
     setPlan(p);
-    setDirty(true);
+    markDirty();
+  }
+  function changeYt(y: YoutubeMeta) {
+    setYt(y);
+    markDirty();
   }
   function setScene(i: number, s: Scene) {
     if (!plan) return;
@@ -146,38 +204,80 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
     setKeys(k);
     change({ ...plan, scenes });
     setSel(at);
-    setTab("scene");
   }
   function deleteScene(i: number) {
     if (!plan || plan.scenes.length <= 1) return toast.error("A video needs at least one scene.");
+    const removed = plan.scenes[i];
+    const removedKey = keys[i];
     change({ ...plan, scenes: plan.scenes.filter((_, k) => k !== i) });
     setKeys(keys.filter((_, k) => k !== i));
     setSel(Math.max(0, Math.min(sel, plan.scenes.length - 2)));
+    toast(`Scene ${i + 1} deleted`, {
+      action: {
+        label: "Undo",
+        onClick: () =>
+          setPlan((p) => {
+            if (!p) return p;
+            const scenes = [...p.scenes];
+            scenes.splice(i, 0, removed);
+            setKeys((ks) => {
+              const c = [...ks];
+              c.splice(i, 0, removedKey);
+              return c;
+            });
+            markDirty();
+            return { ...p, scenes };
+          }),
+      },
+    });
   }
-  function onDragEnd(e: DragEndEvent) {
-    if (!plan || !e.over || e.active.id === e.over.id) return;
-    const from = keys.indexOf(String(e.active.id));
-    const to = keys.indexOf(String(e.over.id));
+  function moveScene(from: number, to: number) {
+    if (!plan || from < 0 || to < 0) return;
     change({ ...plan, scenes: arrayMove(plan.scenes, from, to) });
     setKeys(arrayMove(keys, from, to));
     if (sel === from) setSel(to);
   }
 
-  async function save(silent = false) {
-    if (!plan) return false;
-    setBusy("save");
-    try {
-      await api(`/api/videos/${id}`, { method: "PATCH", body: { plan, youtube: yt } });
-      setDirty(false);
-      if (!silent) toast.success("Saved ✅");
-      return true;
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't save");
-      return false;
-    } finally {
-      setBusy("");
-    }
-  }
+  const save = useCallback(
+    async (silent = true) => {
+      if (!plan) return false;
+      const v = version.current;
+      setSaveState("saving");
+      try {
+        await api(`/api/videos/${id}`, { method: "PATCH", body: { plan, youtube: yt } });
+        if (version.current === v) {
+          setDirty(false);
+          setSaveState("saved");
+        } else setSaveState("unsaved");
+        if (!silent) toast.success("Saved");
+        return true;
+      } catch (e) {
+        setSaveState("error");
+        if (!silent) toast.error(e instanceof Error ? e.message : "Couldn't save");
+        return false;
+      }
+    },
+    [id, plan, yt],
+  );
+
+  // autosave 1.5 s after the last edit
+  useEffect(() => {
+    if (!dirty || locked || busy === "approve" || !plan) return;
+    const t = setTimeout(() => save(true), 1500);
+    return () => clearTimeout(t);
+  }, [dirty, locked, busy, plan, yt, save]);
+
+  // Ctrl/Cmd+S saves now
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        if (!locked) save(false);
+      }
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [save, locked]);
 
   async function approve() {
     if (!plan) return;
@@ -190,7 +290,10 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
     try {
       const r = await api<{ warnings: string[] }>(`/api/videos/${id}/approve`, { body: { plan, youtube: yt } });
       setDirty(false);
-      toast.success("🎬 Sent to the render studio!", { description: r.warnings.length ? `${r.warnings.length} note(s) to double-check later.` : undefined });
+      setSaveState("saved");
+      toast.success("Sent to the render studio", {
+        description: r.warnings.length ? `${r.warnings.length} note(s) to double-check later.` : "You'll get a notification when it's ready.",
+      });
       router.push("/studio/queue");
     } catch (e) {
       if (e instanceof ApiError && e.issues) setIssues(e.issues);
@@ -206,7 +309,7 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
       const r = await api<{ scene: Scene }>(`/api/videos/${id}/regenerate-scene`, { body: { index: sel, instruction, plan } });
       setScene(sel, r.scene);
       setInstruction("");
-      toast.success("✨ Scene rewritten");
+      toast.success("Scene rewritten");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't rewrite the scene");
     } finally {
@@ -219,12 +322,22 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
     try {
       await api(`/api/videos/${id}/generate`, { body: { review: true } });
       setRegenOpen(false);
-      toast.success("✍️ Writing a fresh script…");
+      toast.success("Writing a fresh script…");
       await load();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed");
     } finally {
       setBusy("");
+    }
+  }
+
+  function validateJson(text: string) {
+    setJsonText(text);
+    try {
+      const r = PlanSchema.safeParse(JSON.parse(text));
+      setJsonError(r.success ? null : describeIssues(r.error)[0] ?? "Invalid script");
+    } catch (e) {
+      setJsonError("Not valid JSON: " + (e instanceof Error ? e.message : ""));
     }
   }
 
@@ -240,58 +353,77 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
       setKeys(r.data.scenes.map((_, i) => `j${i}-${Date.now()}`));
       setSel(0);
       toast.success("JSON applied");
-      setTab("scene");
     } catch (e) {
       toast.error("That isn't valid JSON: " + (e instanceof Error ? e.message : ""));
     }
   }
 
-  /* ---------------- render ---------------- */
+  /* ---------------- loading / writing states ---------------- */
 
   if (!video) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-16" />
-        <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
-          <Skeleton className="h-[60vh]" />
-          <Skeleton className="h-[60vh]" />
+        <Skeleton className="h-20" />
+        <div className="grid gap-4 lg:grid-cols-[290px_1fr] xl:grid-cols-[290px_1fr_360px]">
+          <Skeleton className="h-[65vh]" />
+          <Skeleton className="h-[65vh]" />
+          <Skeleton className="hidden h-[65vh] xl:block" />
         </div>
       </div>
     );
   }
 
   if (!plan || video.status === "scripting") {
+    const failed = video.status === "failed";
     return (
-      <Card className="mx-auto max-w-xl p-8 text-center">
-        <motion.div animate={{ rotate: [0, -8, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity }} className="text-6xl">
-          {video.status === "failed" ? "😿" : "✍️"}
-        </motion.div>
-        <h1 className="mt-3 text-2xl font-semibold">{video.status === "failed" ? "The script couldn't be written" : "Claude is writing the script…"}</h1>
-        <p className="mt-1 text-slate-500">{video.status === "failed" ? video.error : video.message}</p>
-        <div className="mt-5 flex justify-center gap-2">
-          <Link href="/studio/queue">
-            <Button variant="secondary">Back to queue</Button>
-          </Link>
-          {video.status === "failed" && (
-            <Button
-              icon={<RefreshCw className="h-4 w-4" />}
-              onClick={async () => {
-                await api(`/api/videos/${id}/retry`, { method: "POST" }).catch((e) => toast.error(e.message));
-                load();
-              }}
+      <div className="relative mx-auto mt-6 max-w-xl">
+        <div className="pointer-events-none absolute -inset-10 -z-10 rounded-full bg-brand-500/20 blur-3xl" />
+        <Card className="p-10 text-center">
+          <div className="relative mx-auto grid h-20 w-20 place-items-center">
+            {!failed && <span className="absolute inset-0 animate-pulse-ring rounded-full bg-brand-500/40" />}
+            <motion.div
+              animate={failed ? {} : { rotate: [0, -8, 8, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className={cx(
+                "relative grid h-20 w-20 place-items-center rounded-3xl border border-white/10 text-4xl",
+                failed ? "bg-rose-500/15" : "bg-gradient-to-br from-brand-500/40 to-fuchsia-500/20 shadow-glow",
+              )}
             >
-              Try again
-            </Button>
+              {failed ? "😿" : "✍️"}
+            </motion.div>
+          </div>
+          <h1 className="mt-6 text-2xl font-semibold text-fg">{failed ? "The script couldn't be written" : "Claude is writing the script…"}</h1>
+          <p className="mx-auto mt-2 max-w-md text-sm text-fg-muted">{failed ? video.error : video.message}</p>
+          {!failed && (
+            <div className="mx-auto mt-6 h-1.5 w-48 overflow-hidden rounded-full bg-white/[0.07]">
+              <div className="h-full w-1/3 animate-[shimmer_1.4s_ease-in-out_infinite] rounded-full bg-brand-grad" style={{ transform: "translateX(-100%)" }} />
+            </div>
           )}
-        </div>
-      </Card>
+          <div className="mt-8 flex justify-center gap-2">
+            <Link href="/studio/queue">
+              <Button variant="secondary" icon={<ArrowLeft className="h-4 w-4" />}>
+                Back to queue
+              </Button>
+            </Link>
+            {failed && (
+              <Button
+                icon={<RefreshCw className="h-4 w-4" />}
+                onClick={async () => {
+                  await api(`/api/videos/${id}/retry`, { method: "POST" }).catch((e) => toast.error(e.message));
+                  load();
+                }}
+              >
+                Try again
+              </Button>
+            )}
+          </div>
+        </Card>
+      </div>
     );
   }
 
   const scene = plan.scenes[Math.min(sel, plan.scenes.length - 1)];
   const short = plan.format === "short";
-  const over = total > plan.target_seconds * (short ? 1.08 : 1.2);
-  const under = total < plan.target_seconds * 0.75;
   const style: StyleValue = {
     voice: plan.voice,
     speed: plan.speed,
@@ -305,317 +437,358 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
     greeting: plan.brand.greeting,
     subscribe: plan.brand.subscribe,
   };
+  const warnings = video.warnings ?? [];
+  const meta = typeMeta(scene.type);
+
+  const sideTabs: { value: SideTab; label: React.ReactNode }[] = [
+    { value: "style", label: <span className="flex items-center gap-1.5"><Palette className="h-3.5 w-3.5" />Style</span> },
+    { value: "youtube", label: <span className="flex items-center gap-1.5"><Youtube className="h-3.5 w-3.5" />YouTube</span> },
+    {
+      value: "warnings",
+      label: (
+        <span className="flex items-center gap-1.5">
+          <AlertTriangle className="h-3.5 w-3.5" />
+          {warnings.length > 0 && <span className="rounded-full bg-amber-400/20 px-1.5 text-[10px] text-amber-300">{warnings.length}</span>}
+        </span>
+      ),
+    },
+    { value: "json", label: <span className="flex items-center gap-1.5"><Braces className="h-3.5 w-3.5" /></span> },
+  ];
 
   return (
     <div className="space-y-5">
-      {/* header */}
-      <div className="card sticky top-16 z-30 flex flex-col gap-3 p-3 sm:p-4 lg:top-4 lg:flex-row lg:items-center">
-        <Link href="/studio/queue" className="hidden rounded-xl p-2 text-brand-600 hover:bg-brand-50 lg:block" aria-label="Back">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <div className="min-w-0 flex-1">
-          <input
-            aria-label="Video title"
-            className="w-full rounded-xl border-2 border-transparent bg-transparent px-2 py-1 font-display text-2xl font-semibold outline-none hover:border-brand-100 focus:border-brand-300"
-            value={plan.title}
-            onChange={(e) => change({ ...plan, title: e.target.value })}
-          />
-          <div className="flex flex-wrap items-center gap-2 px-2 text-sm">
-            <StatusBadge status={video.status} />
-            <Badge className={short ? "bg-rose-soft text-rose" : "bg-brand-50 text-brand-700"}>{short ? "📱 Short" : "🖥️ Long"}</Badge>
-            <Badge className={over ? "bg-red-100 text-red-700" : under ? "bg-sun-soft text-amber-800" : "bg-leaf-soft text-green-800"}>
-              ⏱️ ~{fmtDuration(total)} / target {fmtDuration(plan.target_seconds)}
-            </Badge>
-            <span className="text-xs font-semibold text-slate-400">
-              {plan.scenes.length} scenes · {words} words
-            </span>
-            {dirty && <span className="text-xs font-bold text-orange-600">● unsaved</span>}
+      {/* ===================== top bar ===================== */}
+      <div className="card sticky top-16 z-30 p-3 lg:top-4">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <Link
+              href="/studio/queue"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-fg-muted ring-1 ring-white/10 transition hover:bg-white/[0.06] hover:text-fg"
+              aria-label="Back to queue"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <div className="min-w-0 flex-1">
+              <input
+                aria-label="Video title"
+                className="w-full rounded-lg border border-transparent bg-transparent px-2 py-0.5 font-display text-xl font-semibold text-fg outline-none transition hover:border-white/10 focus:border-brand-400/60 focus:bg-white/[0.04]"
+                value={plan.title}
+                onChange={(e) => change({ ...plan, title: e.target.value })}
+                disabled={locked}
+              />
+              <div className="mt-1 flex flex-wrap items-center gap-2 px-2">
+                <StatusPill status={video.status} />
+                <Badge className={short ? "bg-pink-500/15 text-pink-300" : "bg-violet-500/15 text-violet-300"}>{short ? "📱 Short · 9:16" : "🖥️ Long · 16:9"}</Badge>
+                <span className="text-[11px] font-semibold text-fg-subtle">
+                  {plan.scenes.length} scenes · {words} words
+                </span>
+                <span className="mx-1 hidden h-3 w-px bg-white/10 sm:block" />
+                <SaveIndicator state={saveState} onRetry={() => save(false)} />
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="ghost" size="sm" icon={<RefreshCw className="h-4 w-4" />} onClick={() => setRegenOpen(true)} disabled={locked}>
-            Rewrite all
-          </Button>
-          <Button variant="secondary" size="sm" icon={<Save className="h-4 w-4" />} loading={busy === "save"} onClick={() => save()} disabled={!dirty || locked}>
-            Save
-          </Button>
-          <Button variant="success" icon={<Rocket className="h-4 w-4" />} loading={busy === "approve"} onClick={approve} disabled={locked}>
-            {video.status === "done" ? "Re-render" : "Approve & render"}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <DurationMeter total={total} target={plan.target_seconds} short={short} />
+            <Button variant="secondary" size="md" icon={<RefreshCw className="h-4 w-4" />} onClick={() => setRegenOpen(true)} disabled={locked}>
+              Regenerate
+            </Button>
+            <Button size="md" icon={<Rocket className="h-4 w-4" />} loading={busy === "approve"} onClick={approve} disabled={locked}>
+              {video.status === "done" ? "Re-render" : "Approve & render"}
+            </Button>
+          </div>
         </div>
       </div>
 
-      {locked && <p className="rounded-2xl bg-sky-soft p-3 text-sm font-semibold text-sky">🎨 This video is in the render studio right now — editing is paused. Cancel it in the queue to make changes.</p>}
+      {locked && (
+        <div className="flex items-center gap-3 rounded-2xl border border-cyan-400/25 bg-cyan-400/[0.07] p-3.5 text-sm text-cyan-200">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-300 opacity-60" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-300" />
+          </span>
+          This video is in the render studio right now — editing is paused. Cancel it in the queue to make changes.
+        </div>
+      )}
 
-      <AnimatePresence>
-        {video.warnings?.length > 0 && showWarnings && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-            <div className="rounded-3xl border-2 border-sun bg-sun-soft p-4">
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="flex items-center gap-2 font-semibold text-amber-900">
-                  <AlertTriangle className="h-5 w-5" /> Please double-check ({video.warnings.length})
-                </h3>
-                <button onClick={() => setShowWarnings(false)} className="text-sm font-bold text-amber-800 hover:underline">
-                  Hide
-                </button>
-              </div>
-              <ul className="mt-2 list-disc space-y-1 pl-6 text-sm text-amber-900">
-                {video.warnings.map((w, i) => (
-                  <li key={i}>{w}</li>
-                ))}
-              </ul>
-            </div>
-          </motion.div>
+      {/* ===================== 3 panes ===================== */}
+      <div
+        className={cx(
+          "grid gap-5 lg:grid-cols-[290px_minmax(0,1fr)]",
+          sideOpen ? "xl:grid-cols-[290px_minmax(0,1fr)_380px]" : "xl:grid-cols-[290px_minmax(0,1fr)_52px]",
         )}
-      </AnimatePresence>
-
-      <div className="grid gap-5 lg:grid-cols-[330px_minmax(0,1fr)]">
-        {/* scene list */}
-        <div className="lg:sticky lg:top-40 lg:max-h-[calc(100vh-11rem)] lg:self-start lg:overflow-y-auto lg:pr-1 scrollbar-thin">
-          <Card className="p-3">
-            <div className="mb-2 flex items-center justify-between px-1">
-              <h2 className="text-lg font-semibold">🎬 Scenes</h2>
-              <Button size="sm" variant="secondary" icon={<Plus className="h-4 w-4" />} onClick={() => setAddOpen(true)} disabled={locked}>
-                Add
-              </Button>
-            </div>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-              <SortableContext items={keys} strategy={verticalListSortingStrategy}>
-                <div className="space-y-1.5">
-                  {plan.scenes.map((s, i) => (
-                    <SceneItem
-                      key={keys[i] ?? i}
-                      id={keys[i] ?? String(i)}
-                      scene={s}
-                      index={i}
-                      speed={plan.speed}
-                      active={i === sel && tab === "scene"}
-                      onSelect={() => {
-                        setSel(i);
-                        setTab("scene");
-                      }}
-                      onDup={() => insertScene(structuredClone(s), i + 1)}
-                      onDel={() => deleteScene(i)}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-            <div className="mt-3 grid grid-cols-3 gap-1.5 border-t border-brand-100 pt-3">
-              {(
-                [
-                  { t: "youtube", label: "YouTube", icon: Youtube },
-                  { t: "settings", label: "Style", icon: Settings2 },
-                  { t: "json", label: "JSON", icon: Braces },
-                ] as const
-              ).map((b) => (
-                <button
-                  key={b.t}
-                  onClick={() => {
-                    if (b.t === "json") setJsonText(JSON.stringify(plan, null, 2));
-                    setTab(b.t);
-                  }}
-                  className={cx(
-                    "flex flex-col items-center gap-1 rounded-2xl py-2 text-xs font-bold transition",
-                    tab === b.t ? "bg-brand-500 text-white" : "bg-brand-50 text-brand-700 hover:bg-brand-100",
-                  )}
-                >
-                  <b.icon className="h-4 w-4" />
-                  {b.label}
-                </button>
-              ))}
-            </div>
-          </Card>
+      >
+        {/* left: scenes */}
+        <div className="lg:sticky lg:top-40 lg:self-start">
+          <SceneList
+            scenes={plan.scenes}
+            keys={keys}
+            sel={sel}
+            speed={plan.speed}
+            locked={locked}
+            onSelect={setSel}
+            onDup={(i) => insertScene(structuredClone(plan.scenes[i]), i + 1)}
+            onDel={deleteScene}
+            onMove={moveScene}
+            onAdd={() => setAddOpen(true)}
+          />
         </div>
 
-        {/* editor */}
+        {/* center: selected scene */}
         <div className="min-w-0">
           <AnimatePresence mode="wait">
-            <motion.div key={tab === "scene" ? `scene-${keys[sel]}` : tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-              {tab === "scene" && scene && (
-                <Card className={cx("p-5 sm:p-6", locked && "pointer-events-none opacity-60")}>
-                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <motion.div
+              key={`scene-${keys[sel] ?? sel}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+            >
+              <Card className={cx("overflow-hidden p-0", locked && "pointer-events-none opacity-60")}>
+                <div className="relative border-b border-white/[0.06] p-5 sm:p-6">
+                  <div className="pointer-events-none absolute -left-10 -top-16 h-40 w-40 rounded-full bg-brand-500/20 blur-3xl" />
+                  <div className="relative flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <span className="grid h-12 w-12 place-items-center rounded-2xl bg-brand-50 text-2xl">{typeMeta(scene.type).emoji}</span>
+                      <span className="grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.1] to-white/[0.02] text-2xl">
+                        {meta.emoji}
+                      </span>
                       <div>
-                        <div className="text-xs font-bold uppercase tracking-wider text-brand-500">Scene {sel + 1}</div>
-                        <h2 className="text-xl font-semibold">{typeMeta(scene.type).name}</h2>
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-300">
+                          Scene {sel + 1} of {plan.scenes.length}
+                        </div>
+                        <h2 className="text-xl font-semibold text-fg">{meta.name}</h2>
                       </div>
                     </div>
-                    <span className="text-sm font-semibold text-slate-400">~{Math.round(sceneSeconds(scene, plan.speed))} seconds</span>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-white/[0.05] px-2.5 py-1 text-xs font-semibold tabular-nums text-fg-muted">
+                        ~{Math.round(sceneSeconds(scene, plan.speed))}s
+                      </span>
+                      <IconButton label="Previous scene" disabled={sel === 0} onClick={() => setSel(Math.max(0, sel - 1))} className="disabled:opacity-30">
+                        <ArrowLeft className="h-4 w-4" />
+                      </IconButton>
+                      <IconButton
+                        label="Next scene"
+                        disabled={sel >= plan.scenes.length - 1}
+                        onClick={() => setSel(Math.min(plan.scenes.length - 1, sel + 1))}
+                        className="disabled:opacity-30"
+                      >
+                        <ArrowLeft className="h-4 w-4 rotate-180" />
+                      </IconButton>
+                    </div>
                   </div>
-                  <div className="mb-6 flex flex-col gap-2 rounded-3xl bg-gradient-to-r from-brand-50 to-orange-soft p-3 sm:flex-row">
-                    <input
-                      className="input flex-1 border-transparent"
-                      placeholder="✨ Ask AI to rewrite this scene… e.g. “use apples instead”, “make it a quiz”, “simpler words”"
-                      value={instruction}
-                      onChange={(e) => setInstruction(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && regenScene()}
-                    />
-                    <Button variant="warm" icon={<Wand2 className="h-4 w-4" />} loading={busy === "regen-scene"} onClick={regenScene}>
-                      Rewrite scene
-                    </Button>
-                  </div>
-                  <SceneForm scene={scene} speed={plan.speed} short={short} onChange={(s) => setScene(sel, s)} />
-                </Card>
-              )}
 
-              {tab === "youtube" && (
-                <Card className="space-y-4 p-5 sm:p-6">
-                  <h2 className="flex items-center gap-2 text-xl font-semibold">
-                    <Youtube className="h-6 w-6 text-red-500" /> YouTube details
-                  </h2>
-                  <label className="block">
-                    <span className="label flex justify-between">
-                      Title <span className={cx("text-xs", yt.title.length > 100 ? "text-red-500" : "text-slate-400")}>{yt.title.length}/100</span>
-                    </span>
-                    <input
-                      className="input text-lg font-semibold"
-                      value={yt.title}
-                      onChange={(e) => {
-                        setYt({ ...yt, title: e.target.value });
-                        setDirty(true);
-                      }}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="label">Description</span>
-                    <textarea
-                      className="input min-h-[220px]"
-                      value={yt.description}
-                      onChange={(e) => {
-                        setYt({ ...yt, description: e.target.value });
-                        setDirty(true);
-                      }}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="label">Tags (comma separated)</span>
-                    <input
-                      className="input"
-                      value={yt.tags.join(", ")}
-                      onChange={(e) => {
-                        setYt({ ...yt, tags: e.target.value.split(",").map((t) => t.trim()).filter(Boolean) });
-                        setDirty(true);
-                      }}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="label">Hashtags (space separated)</span>
-                    <input
-                      className="input"
-                      value={yt.hashtags.join(" ")}
-                      onChange={(e) => {
-                        setYt({ ...yt, hashtags: e.target.value.split(/\s+/).filter(Boolean).map((h) => (h.startsWith("#") ? h : `#${h}`)) });
-                        setDirty(true);
-                      }}
-                    />
-                  </label>
-                </Card>
-              )}
-
-              {tab === "settings" && (
-                <Card className={cx("space-y-8 p-5 sm:p-6", locked && "pointer-events-none opacity-60")}>
-                  <div>
-                    <h2 className="mb-4 text-xl font-semibold">📐 Format & length</h2>
-                    <FormatPicker
-                      speed={plan.speed}
-                      value={{ format: plan.format, target_seconds: plan.target_seconds }}
-                      onChange={(f) => change({ ...plan, format: f.format, target_seconds: f.target_seconds, strict_length: f.format === "short" })}
-                    />
-                    <p className="hint mt-2">Changing the format keeps your scenes — for big changes use “Rewrite all”.</p>
-                  </div>
-                  <StylePanel
-                    value={style}
-                    onChange={(v) =>
-                      change({
-                        ...plan,
-                        voice: v.voice,
-                        speed: v.speed,
-                        music: v.music,
-                        sfx: v.sfx,
-                        mascot: v.presenter !== "none",
-                        presenter: v.presenter as typeof plan.presenter,
-                        captions: v.captions,
-                        palette: v.palette,
-                        brand: { ...plan.brand, chip: v.chip || undefined, greeting: v.greeting, subscribe: v.subscribe },
-                      })
-                    }
-                  />
-                </Card>
-              )}
-
-              {tab === "json" && (
-                <Card className="p-5 sm:p-6">
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                    <h2 className="text-xl font-semibold">🧩 Advanced: script JSON</h2>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => setJsonText(JSON.stringify(plan, null, 2))}>
-                        Reset
-                      </Button>
-                      <Button size="sm" onClick={applyJson} disabled={locked}>
-                        Apply JSON
+                  {/* AI rewrite */}
+                  <div className="relative mt-5 rounded-2xl bg-gradient-to-r from-brand-500/40 via-fuchsia-500/30 to-cyan-400/30 p-px">
+                    <div className="flex flex-col gap-2 rounded-[15px] bg-bg-elev/95 p-2 sm:flex-row sm:items-center">
+                      <Sparkles className="ml-2 hidden h-4 w-4 shrink-0 text-brand-300 sm:block" />
+                      <input
+                        className="min-w-0 flex-1 bg-transparent px-2 py-2 text-sm text-fg outline-none placeholder:text-fg-subtle"
+                        placeholder="Ask AI to rewrite this scene… e.g. “use apples instead”, “simpler words”, “make it a quiz”"
+                        value={instruction}
+                        onChange={(e) => setInstruction(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && busy !== "regen-scene" && regenScene()}
+                      />
+                      <Button size="sm" variant="warm" icon={<Wand2 className="h-4 w-4" />} loading={busy === "regen-scene"} onClick={regenScene}>
+                        Rewrite scene
                       </Button>
                     </div>
                   </div>
-                  <textarea
-                    spellCheck={false}
-                    className="input min-h-[65vh] font-mono text-xs leading-relaxed"
-                    value={jsonText}
-                    onChange={(e) => setJsonText(e.target.value)}
-                    aria-label="Script JSON"
-                  />
-                </Card>
-              )}
+                </div>
+                <div className="p-5 sm:p-6">
+                  <SceneForm scene={scene} speed={plan.speed} short={short} onChange={(s) => setScene(sel, s)} />
+                </div>
+              </Card>
             </motion.div>
           </AnimatePresence>
         </div>
+
+        {/* right: side panel */}
+        <div className="min-w-0 lg:col-span-2 xl:col-span-1 xl:sticky xl:top-40 xl:self-start">
+          {sideOpen ? (
+            <Card className="flex flex-col overflow-hidden p-0">
+              <div className="flex items-center gap-2 border-b border-white/[0.06] p-2">
+                <Segmented value={side} onChange={(v) => setSide(v)} options={sideTabs} className="flex-1 justify-between" />
+                <IconButton label="Collapse panel" onClick={() => setSideOpen(false)} className="hidden xl:inline-flex">
+                  <PanelRightClose className="h-4 w-4" />
+                </IconButton>
+              </div>
+              <div className="scrollbar-thin overflow-y-auto p-4 xl:max-h-[calc(100vh-14rem)]">
+                <AnimatePresence mode="wait">
+                  <motion.div key={side} initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }}>
+                    {side === "style" && (
+                      <div className={cx("space-y-7", locked && "pointer-events-none opacity-60")}>
+                        <div>
+                          <h3 className="mb-3 font-display text-sm font-semibold text-fg">Format & length</h3>
+                          <FormatPicker
+                            speed={plan.speed}
+                            value={{ format: plan.format, target_seconds: plan.target_seconds }}
+                            onChange={(f) => change({ ...plan, format: f.format, target_seconds: f.target_seconds, strict_length: f.format === "short" })}
+                          />
+                          <p className="hint mt-2">Changing the format keeps your scenes — for big changes use “Regenerate”.</p>
+                        </div>
+                        <div className="divider" />
+                        <StylePanel
+                          value={style}
+                          onChange={(v) =>
+                            change({
+                              ...plan,
+                              voice: v.voice,
+                              speed: v.speed,
+                              music: v.music,
+                              sfx: v.sfx,
+                              mascot: v.presenter !== "none",
+                              presenter: v.presenter as typeof plan.presenter,
+                              captions: v.captions,
+                              palette: v.palette,
+                              brand: { ...plan.brand, chip: v.chip || undefined, greeting: v.greeting, subscribe: v.subscribe },
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+
+                    {side === "youtube" && <YoutubePanel value={yt} onChange={changeYt} />}
+
+                    {side === "warnings" && (
+                      <div className="space-y-3">
+                        <h3 className="font-display text-sm font-semibold text-fg">Please double-check</h3>
+                        {warnings.length === 0 ? (
+                          <div className="flex items-center gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.06] p-4 text-sm text-emerald-200">
+                            <Check className="h-5 w-5" /> No warnings for this script.
+                          </div>
+                        ) : (
+                          warnings.map((w, i) => (
+                            <div key={i} className="flex gap-3 rounded-2xl border border-amber-400/20 bg-amber-400/[0.06] p-3.5 text-sm text-amber-100">
+                              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+                              <span>{w}</span>
+                            </div>
+                          ))
+                        )}
+                        <p className="hint">Islamic references (ayah, hadith, Seerah) are always flagged — verify them with a trusted source before publishing.</p>
+                        <div className="divider my-2" />
+                        <h3 className="font-display text-sm font-semibold text-fg">Scene checks</h3>
+                        {plan.scenes.map((s, i) => {
+                          const empty = s.beats.some((b) => !b.say.trim());
+                          if (!empty) return null;
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => setSel(i)}
+                              className="flex w-full items-center gap-2 rounded-xl border border-rose-400/20 bg-rose-500/[0.06] p-3 text-left text-sm text-rose-200 transition hover:bg-rose-500/10"
+                            >
+                              <CircleAlert className="h-4 w-4 shrink-0" /> Scene {i + 1} has an empty narration beat
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {side === "json" && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-display text-sm font-semibold text-fg">Script JSON</h3>
+                          <div className="flex gap-1.5">
+                            <Button size="sm" variant="ghost" onClick={() => validateJson(JSON.stringify(plan, null, 2))}>
+                              Reset
+                            </Button>
+                            <Button size="sm" onClick={applyJson} disabled={locked || !!jsonError}>
+                              Apply
+                            </Button>
+                          </div>
+                        </div>
+                        <div
+                          className={cx(
+                            "flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold",
+                            jsonError ? "bg-rose-500/10 text-rose-300" : "bg-emerald-400/10 text-emerald-300",
+                          )}
+                        >
+                          {jsonError ? <CircleAlert className="h-3.5 w-3.5 shrink-0" /> : <Check className="h-3.5 w-3.5" />}
+                          <span className="truncate">{jsonError ?? "Valid script"}</span>
+                        </div>
+                        <textarea
+                          spellCheck={false}
+                          className="input min-h-[55vh] bg-[#07060d] font-mono text-[11px] leading-relaxed text-[#C4B5FD]"
+                          value={jsonText}
+                          onChange={(e) => validateJson(e.target.value)}
+                          aria-label="Script JSON"
+                        />
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </Card>
+          ) : (
+            <div className="card hidden flex-col items-center gap-2 p-2 xl:flex">
+              <IconButton label="Open panel" onClick={() => setSideOpen(true)}>
+                <PanelRightOpen className="h-4 w-4" />
+              </IconButton>
+              {(["style", "youtube", "warnings", "json"] as SideTab[]).map((t) => {
+                const Icon = { style: Palette, youtube: Youtube, warnings: AlertTriangle, json: Braces }[t];
+                return (
+                  <IconButton
+                    key={t}
+                    label={t}
+                    onClick={() => {
+                      setSide(t);
+                      setSideOpen(true);
+                    }}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </IconButton>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* add scene */}
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="➕ Add a scene">
-        <p className="mb-4 text-sm text-slate-500">It will be added after scene {sel + 1}. Then fill it in or ask AI to write it.</p>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {SCENE_TYPES.map((t) => (
-            <button
+      {/* ===================== add scene ===================== */}
+      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add a scene" className="max-w-4xl">
+        <p className="-mt-2 mb-5 text-sm text-fg-muted">It will be added after scene {sel + 1}. Fill it in yourself or ask AI to write it.</p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {SCENE_TYPES.map((t, i) => (
+            <motion.button
               key={t.type}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.025 }}
               onClick={() => {
                 insertScene(blankScene(t.type), Math.min(plan.scenes.length, sel + 1));
                 setAddOpen(false);
               }}
-              className="rounded-3xl border-2 border-brand-100 bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-pop"
+              className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-left transition duration-300 hover:-translate-y-0.5 hover:border-brand-400/50 hover:shadow-glow"
             >
-              <div className="text-3xl">{t.emoji}</div>
-              <div className="mt-1 font-display font-semibold">{t.name}</div>
-              <div className="text-xs text-slate-500">{t.desc}</div>
-            </button>
+              <span className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-brand-500/0 blur-2xl transition group-hover:bg-brand-500/40" />
+              <div className="relative grid h-11 w-11 place-items-center rounded-xl bg-white/[0.06] text-2xl transition group-hover:scale-110">{t.emoji}</div>
+              <div className="relative mt-3 font-display text-sm font-semibold text-fg">{t.name}</div>
+              <div className="relative mt-0.5 text-xs text-fg-subtle">{t.desc}</div>
+            </motion.button>
           ))}
         </div>
       </Modal>
 
-      {/* rewrite all */}
-      <Modal open={regenOpen} onClose={() => setRegenOpen(false)} title="🔄 Rewrite the whole script?">
-        <p className="text-slate-600">Claude will write a brand-new script from your topic and details. Your current edits will be replaced.</p>
-        <div className="mt-5 flex justify-end gap-2">
+      {/* ===================== rewrite all ===================== */}
+      <Modal open={regenOpen} onClose={() => setRegenOpen(false)} title="Regenerate the whole script?" className="max-w-lg">
+        <p className="text-sm text-fg-muted">Claude will write a brand-new script from your topic and details. Your current edits will be replaced.</p>
+        <div className="mt-6 flex justify-end gap-2">
           <Button variant="ghost" onClick={() => setRegenOpen(false)}>
             Keep my script
           </Button>
           <Button variant="warm" icon={<RefreshCw className="h-4 w-4" />} loading={busy === "regen-all"} onClick={regenAll}>
-            Rewrite it
+            Regenerate
           </Button>
         </div>
       </Modal>
 
-      {/* validation issues */}
-      <Modal open={!!issues} onClose={() => setIssues(null)} title="🧐 A few things to fix">
+      {/* ===================== validation issues ===================== */}
+      <Modal open={!!issues} onClose={() => setIssues(null)} title="A few things to fix" className="max-w-lg">
         <ul className="space-y-2">
           {(issues ?? []).map((m, i) => (
-            <li key={i} className="flex gap-2 rounded-2xl bg-red-50 p-3 text-sm text-red-800">
+            <li key={i} className="flex gap-2 rounded-xl border border-rose-400/20 bg-rose-500/[0.07] p-3 text-sm text-rose-200">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> {m}
             </li>
           ))}
         </ul>
-        <div className="mt-5 flex justify-end">
+        <div className="mt-6 flex justify-end">
           <Button onClick={() => setIssues(null)}>OK, I&apos;ll fix them</Button>
         </div>
       </Modal>

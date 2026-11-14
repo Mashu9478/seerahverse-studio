@@ -111,13 +111,13 @@ export const DEFAULT_APP_SETTINGS = {
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
 
 export const STATUS_META: Record<string, { label: string; color: string; emoji: string }> = {
-  draft: { label: "Draft", color: "bg-slate-100 text-slate-700", emoji: "📝" },
-  scripting: { label: "Writing script", color: "bg-brand-100 text-brand-700", emoji: "✍️" },
-  review: { label: "Needs review", color: "bg-sun-soft text-amber-800", emoji: "👀" },
-  queued: { label: "Queued", color: "bg-sky-soft text-sky", emoji: "⏳" },
-  rendering: { label: "Rendering", color: "bg-orange-soft text-orange-700", emoji: "🎨" },
-  uploading: { label: "Uploading", color: "bg-sky-soft text-sky", emoji: "☁️" },
-  done: { label: "Done", color: "bg-leaf-soft text-green-800", emoji: "🎉" },
-  failed: { label: "Failed", color: "bg-red-100 text-red-700", emoji: "⚠️" },
-  canceled: { label: "Canceled", color: "bg-slate-100 text-slate-600", emoji: "🚫" },
+  draft: { label: "Draft", color: "bg-white/[0.06] text-fg-muted ring-white/15", emoji: "📝" },
+  scripting: { label: "Writing script", color: "bg-violet-500/15 text-violet-300 ring-violet-400/30", emoji: "✍️" },
+  review: { label: "Needs review", color: "bg-amber-400/15 text-amber-300 ring-amber-400/30", emoji: "👀" },
+  queued: { label: "Queued", color: "bg-sky-400/15 text-sky-300 ring-sky-400/30", emoji: "⏳" },
+  rendering: { label: "Rendering", color: "bg-cyan-400/15 text-cyan-300 ring-cyan-400/30", emoji: "🎨" },
+  uploading: { label: "Uploading", color: "bg-sky-400/15 text-sky-300 ring-sky-400/30", emoji: "☁️" },
+  done: { label: "Done", color: "bg-emerald-400/15 text-emerald-300 ring-emerald-400/30", emoji: "🎉" },
+  failed: { label: "Failed", color: "bg-rose-500/15 text-rose-300 ring-rose-400/30", emoji: "⚠️" },
+  canceled: { label: "Canceled", color: "bg-white/[0.06] text-fg-subtle ring-white/15", emoji: "🚫" },
 };

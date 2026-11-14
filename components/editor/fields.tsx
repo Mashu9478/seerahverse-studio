@@ -1,9 +1,39 @@
 "use client";
 
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useLayoutEffect, useRef, type ReactNode, type TextareaHTMLAttributes } from "react";
 import type { Beat } from "@/lib/plan";
 import { cx } from "../ui";
+
+/** Textarea that grows with its content. */
+export function AutoTextarea({ className, value, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight + 2}px`;
+  }, [value]);
+  return <textarea ref={ref} value={value} rows={2} className={cx("input resize-none overflow-hidden", className)} {...rest} />;
+}
+
+function Counter({ len, max }: { len: number; max: number }) {
+  const pct = Math.min(1, len / max);
+  const over = len > max;
+  return (
+    <span className="flex items-center gap-1.5 normal-case tracking-normal">
+      <span className="relative h-1 w-10 overflow-hidden rounded-full bg-white/10">
+        <span
+          className={cx("absolute inset-y-0 left-0 rounded-full", over ? "bg-red-500" : pct > 0.85 ? "bg-amber-400" : "bg-brand-400")}
+          style={{ width: `${pct * 100}%` }}
+        />
+      </span>
+      <span className={cx("text-[11px] font-semibold tabular-nums", over ? "text-red-600" : "text-fg-subtle")}>
+        {len}/{max}
+      </span>
+    </span>
+  );
+}
 
 export function TextIn({
   label,
@@ -25,22 +55,43 @@ export function TextIn({
   const len = (value ?? "").length;
   return (
     <label className={cx("block", className)}>
-      <span className="label flex justify-between">
+      <span className="label flex items-center justify-between gap-2">
         <span>{label}</span>
-        {max && <span className={cx("text-xs font-semibold", len > max ? "text-red-500" : "text-slate-400")}>{len}/{max}</span>}
+        {max && <Counter len={len} max={max} />}
       </span>
-      <input className={cx("input", big && "text-lg font-semibold")} value={value ?? ""} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+      <input
+        className={cx("input", big && "font-display text-lg font-semibold", !!max && len > max && "border-red-500/60 focus:border-red-500/80")}
+        value={value ?? ""}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </label>
   );
 }
 
-export function NumIn({ label, value, onChange, min, max, step = 1, className }: { label: string; value: number | undefined; onChange: (v: number) => void; min?: number; max?: number; step?: number; className?: string }) {
+export function NumIn({
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  step = 1,
+  className,
+}: {
+  label: string;
+  value: number | undefined;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  className?: string;
+}) {
   return (
     <label className={cx("block", className)}>
       <span className="label">{label}</span>
       <input
         type="number"
-        className="input"
+        className="input tabular-nums"
         value={value ?? ""}
         min={min}
         max={max}
@@ -56,18 +107,32 @@ export function EmojiIn({ label = "Emoji", value, onChange, className }: { label
     <label className={cx("block", className)}>
       <span className="label">{label}</span>
       <div className="flex items-center gap-2">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-2xl">{value || "❔"}</span>
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.1] to-white/[0.02] text-2xl">
+          {value || "❔"}
+        </span>
         <input className="input w-20 text-center text-xl" value={value ?? ""} onChange={(e) => onChange(e.target.value)} aria-label={label} />
       </div>
     </label>
   );
 }
 
-export function SelectIn<T extends string>({ label, value, options, onChange, className }: { label: string; value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; className?: string }) {
+export function SelectIn<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  className,
+}: {
+  label: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+  className?: string;
+}) {
   return (
     <label className={cx("block", className)}>
       <span className="label">{label}</span>
-      <select className="input" value={value} onChange={(e) => onChange(e.target.value as T)}>
+      <select className="input cursor-pointer" value={value} onChange={(e) => onChange(e.target.value as T)}>
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
@@ -94,13 +159,16 @@ export function AtPicker({
   label?: string;
   noWord?: boolean;
 }) {
-  const words = at !== undefined && beats[at] ? Array.from(new Set(beats[at].say.split(/\s+/).map((w) => w.replace(/[^\p{L}\p{N}'-]/gu, "")).filter(Boolean))) : [];
+  const words =
+    at !== undefined && beats[at]
+      ? Array.from(new Set(beats[at].say.split(/\s+/).map((w) => w.replace(/[^\p{L}\p{N}'-]/gu, "")).filter(Boolean)))
+      : [];
   return (
     <div className="flex flex-wrap items-end gap-2">
       <label className="block min-w-[160px] flex-1">
         <span className="label">{label}</span>
         <select
-          className="input py-2 text-sm"
+          className="input cursor-pointer py-2 text-sm"
           value={at === undefined ? "" : String(at)}
           onChange={(e) => onChange(e.target.value === "" ? undefined : parseInt(e.target.value, 10), undefined)}
         >
@@ -116,7 +184,7 @@ export function AtPicker({
       {!noWord && at !== undefined && (
         <label className="block w-36">
           <span className="label">…on the word</span>
-          <select className="input py-2 text-sm" value={word ?? ""} onChange={(e) => onChange(at, e.target.value || undefined)}>
+          <select className="input cursor-pointer py-2 text-sm" value={word ?? ""} onChange={(e) => onChange(at, e.target.value || undefined)}>
             <option value="">(start of beat)</option>
             {words.map((w) => (
               <option key={w} value={w}>
@@ -129,6 +197,9 @@ export function AtPicker({
     </div>
   );
 }
+
+const miniBtn =
+  "grid h-7 w-7 place-items-center rounded-lg text-fg-subtle transition hover:bg-white/[0.08] hover:text-fg disabled:pointer-events-none disabled:opacity-25";
 
 /** Generic list editor with add / remove / reorder. */
 export function ListEditor<T>({
@@ -159,29 +230,32 @@ export function ListEditor<T>({
     <div>
       <div className="mb-2 flex items-center justify-between">
         <span className="label mb-0">{title}</span>
-        <span className="text-xs text-slate-400">
+        <span className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-fg-subtle">
           {items.length}/{max}
         </span>
       </div>
       <div className="space-y-2.5">
         {items.map((it, i) => (
-          <div key={i} className="flex gap-2 rounded-2xl border-2 border-brand-100 bg-white p-3">
+          <div
+            key={i}
+            className="group/item flex gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-3 transition focus-within:border-brand-400/40 focus-within:bg-white/[0.04] hover:border-white/15"
+          >
+            <span className="mt-1 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-white/[0.06] text-[11px] font-bold text-fg-muted">{i + 1}</span>
             <div className="min-w-0 flex-1">{render(it, (v) => onChange(items.map((x, k) => (k === i ? v : x))), i)}</div>
-            <div className="flex flex-col gap-0.5">
-              <button type="button" aria-label="Move up" onClick={() => move(i, -1)} className="rounded-lg p-1.5 text-slate-500 hover:bg-brand-50 disabled:opacity-30" disabled={i === 0}>
-                <ArrowUp className="h-4 w-4" />
+            <div className="flex flex-col gap-0.5 opacity-60 transition group-hover/item:opacity-100 group-focus-within/item:opacity-100">
+              <button type="button" aria-label="Move up" onClick={() => move(i, -1)} className={miniBtn} disabled={i === 0}>
+                <ArrowUp className="h-3.5 w-3.5" />
+              </button>
+              <button type="button" aria-label="Move down" onClick={() => move(i, 1)} className={miniBtn} disabled={i === items.length - 1}>
+                <ArrowDown className="h-3.5 w-3.5" />
               </button>
               <button
                 type="button"
-                aria-label="Move down"
-                onClick={() => move(i, 1)}
-                className="rounded-lg p-1.5 text-slate-500 hover:bg-brand-50 disabled:opacity-30"
-                disabled={i === items.length - 1}
+                aria-label="Remove"
+                onClick={() => onChange(items.filter((_, k) => k !== i))}
+                className={cx(miniBtn, "hover:bg-red-100 hover:text-red-600")}
               >
-                <ArrowDown className="h-4 w-4" />
-              </button>
-              <button type="button" aria-label="Remove" onClick={() => onChange(items.filter((_, k) => k !== i))} className="rounded-lg p-1.5 text-red-500 hover:bg-red-50">
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
@@ -191,7 +265,7 @@ export function ListEditor<T>({
         <button
           type="button"
           onClick={() => onChange([...items, make()])}
-          className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-brand-200 py-2 text-sm font-bold text-brand-600 hover:border-brand-400 hover:bg-brand-50"
+          className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-white/15 py-2.5 text-[13px] font-semibold text-fg-muted transition hover:border-brand-400/50 hover:bg-brand-500/[0.07] hover:text-brand-800"
         >
           <Plus className="h-4 w-4" /> {addLabel}
         </button>

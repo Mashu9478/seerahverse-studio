@@ -4,9 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, X } from "lucide-react";
 import { forwardRef, useEffect, type ButtonHTMLAttributes, type ReactNode } from "react";
 
-export function cx(...c: (string | false | null | undefined)[]) {
-  return c.filter(Boolean).join(" ");
-}
+import { cx } from "@/lib/cx";
+export { cx };
 
 /* ================================================================ Button
  * primary  – violet→fuchsia gradient, glow, light sweep

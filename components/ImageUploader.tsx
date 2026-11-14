@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
-import { ImagePlus, Loader2, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ImagePlus, Loader2, UploadCloud, X } from "lucide-react";
 import { toast } from "sonner";
 import { cx } from "./ui";
 
@@ -57,13 +58,38 @@ export function ImageUploader({ value, onChange, max = 8 }: { value: string[]; o
         tabIndex={0}
         onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && input.current?.click()}
         className={cx(
-          "flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed px-6 py-8 text-center transition",
-          drag ? "scale-[1.01] border-brand-500 bg-brand-50" : "border-brand-200 bg-white hover:border-brand-400 hover:bg-brand-50/50",
+          "group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl px-6 py-9 text-center transition duration-300",
+          drag ? "scale-[1.01] bg-brand-500/[0.12]" : "bg-white/[0.025] hover:bg-white/[0.045]",
         )}
       >
-        {busy > 0 ? <Loader2 className="mb-2 h-9 w-9 animate-spin text-brand-500" /> : <ImagePlus className="mb-2 h-9 w-9 text-brand-500" />}
-        <div className="font-display text-lg font-semibold">{busy > 0 ? `Uploading ${busy}…` : "Drop textbook pages here"}</div>
-        <div className="text-sm text-slate-500">or click to choose photos · up to {max} pages · Claude will follow them</div>
+        {/* animated dashed border */}
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            rx="22"
+            style={{ width: "calc(100% - 2px)", height: "calc(100% - 2px)" }}
+            fill="none"
+            strokeWidth="1.5"
+            strokeDasharray="8 8"
+            className={cx("transition-colors [animation:dash_1.2s_linear_infinite]", drag ? "stroke-brand-300" : "stroke-white/20 group-hover:stroke-brand-400/70")}
+          />
+        </svg>
+        <style>{`@keyframes dash { to { stroke-dashoffset: -32; } }`}</style>
+        <div
+          className={cx(
+            "relative mb-3 grid h-14 w-14 place-items-center rounded-2xl ring-1 ring-inset ring-white/10 transition duration-300",
+            drag ? "scale-110 bg-brand-500/30 text-brand-800" : "bg-white/[0.06] text-brand-300 group-hover:-translate-y-1",
+          )}
+        >
+          {busy > 0 ? <Loader2 className="h-6 w-6 animate-spin" /> : drag ? <UploadCloud className="h-6 w-6" /> : <ImagePlus className="h-6 w-6" />}
+        </div>
+        <div className="relative font-display text-base font-semibold text-fg">
+          {busy > 0 ? `Uploading ${busy} page${busy === 1 ? "" : "s"}…` : drag ? "Drop to upload" : "Drop textbook pages here"}
+        </div>
+        <div className="relative mt-1 text-sm text-fg-subtle">
+          or <span className="text-brand-300 underline-offset-2 group-hover:underline">browse photos</span> · up to {max} pages · Claude follows them closely
+        </div>
         <input
           ref={input}
           type="file"
@@ -78,21 +104,33 @@ export function ImageUploader({ value, onChange, max = 8 }: { value: string[]; o
       </div>
       {value.length > 0 && (
         <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-          {value.map((u, i) => (
-            <div key={u} className="group relative aspect-[3/4] overflow-hidden rounded-2xl bg-brand-50 ring-1 ring-brand-100">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={u} alt={`Page ${i + 1}`} className="h-full w-full object-cover" />
-              <span className="absolute left-1.5 top-1.5 rounded-full bg-white/90 px-2 text-xs font-bold">p{i + 1}</span>
-              <button
-                type="button"
-                aria-label="Remove page"
-                onClick={() => onChange(value.filter((x) => x !== u))}
-                className="absolute right-1.5 top-1.5 rounded-full bg-white/90 p-1 text-red-600 opacity-0 transition group-hover:opacity-100 focus:opacity-100"
+          <AnimatePresence initial={false}>
+            {value.map((u, i) => (
+              <motion.div
+                key={u}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85 }}
+                className="group relative aspect-[3/4] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]"
               >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={u} alt={`Page ${i + 1}`} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <span className="absolute bottom-1.5 left-1.5 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur">
+                  Page {i + 1}
+                </span>
+                <button
+                  type="button"
+                  aria-label={`Remove page ${i + 1}`}
+                  onClick={() => onChange(value.filter((x) => x !== u))}
+                  className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white opacity-0 backdrop-blur transition hover:bg-red-500 group-hover:opacity-100 focus:opacity-100"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       )}
     </div>

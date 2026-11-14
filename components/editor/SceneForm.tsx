@@ -169,7 +169,7 @@ export function SceneForm({ scene, onChange, speed, short }: { scene: Scene; onC
                 onChange={(v) => p({ op: v })}
               />
               <NumIn className="w-24" label="Number" value={s.b} onChange={(v) => p({ b: v })} />
-              <span className="pb-3 text-2xl font-bold">=</span>
+              <span className="pb-3 text-2xl font-bold text-fg-muted">=</span>
               <NumIn className="w-24" label="Answer" value={s.answer} onChange={(v) => p({ answer: v })} />
               <SelectIn
                 className="w-40"
@@ -221,7 +221,7 @@ export function SceneForm({ scene, onChange, speed, short }: { scene: Scene; onC
                     <button
                       type="button"
                       onClick={() => p({ correct: i })}
-                      className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 font-bold ${Number(s.correct) === i ? "border-leaf bg-leaf text-white" : "border-slate-300 text-slate-400"}`}
+                      className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 font-bold ${Number(s.correct) === i ? "border-emerald-400 bg-emerald-400/20 text-emerald-300 shadow-[0_0_16px_-4px_rgba(52,211,153,0.9)]" : "border-white/15 text-fg-subtle hover:border-white/30 hover:text-fg-muted"}`}
                       aria-label="Mark correct"
                     >
                       ✓
@@ -231,7 +231,7 @@ export function SceneForm({ scene, onChange, speed, short }: { scene: Scene; onC
                 )}
               />
             )}
-            <p className="rounded-2xl bg-sun-soft p-3 text-sm text-amber-900">⏳ A countdown plays between the “Ask” beat and the “Reveal” beat.</p>
+            <p className="rounded-xl border border-amber-400/20 bg-amber-400/[0.07] p-3 text-sm text-amber-200">⏳ A countdown plays between the “Ask” beat and the “Reveal” beat.</p>
           </div>
         );
       }
@@ -266,7 +266,7 @@ export function SceneForm({ scene, onChange, speed, short }: { scene: Scene; onC
           const sd = s[k];
           const setSide = (v: typeof sd) => onChange({ ...s, [k]: v });
           return (
-            <div className="space-y-3 rounded-3xl bg-brand-50/60 p-3">
+            <div className="space-y-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-3">
               <div className="flex items-end gap-2">
                 <EmojiIn value={sd.emoji} onChange={(v) => setSide({ ...sd, emoji: v })} />
                 <TextIn className="flex-1" label={k === "left" ? "Left title" : "Right title"} value={sd.title} max={20} onChange={(v) => setSide({ ...sd, title: v })} />
@@ -404,7 +404,7 @@ export function SceneForm({ scene, onChange, speed, short }: { scene: Scene; onC
               <textarea className="input min-h-[80px]" value={s.translation} onChange={(e) => p({ translation: e.target.value })} />
             </label>
             <TextIn label="Reference" placeholder="e.g. Surah Al-Baqarah 2:286 · Sahih al-Bukhari 6018 · Seerah" value={s.reference} onChange={(v) => p({ reference: v })} />
-            <p className="rounded-2xl bg-leaf-soft p-3 text-sm text-green-900">🕌 Please double-check the reference and translation with a trusted source before publishing.</p>
+            <p className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.07] p-3 text-sm text-emerald-200">🕌 Please double-check the reference and translation with a trusted source before publishing.</p>
           </div>
         );
       }
@@ -423,7 +423,7 @@ export function SceneForm({ scene, onChange, speed, short }: { scene: Scene; onC
   return (
     <div className="space-y-6">
       {body}
-      <div className="border-t border-brand-100 pt-5">{beatsEditor}</div>
+      <div className="border-t border-white/[0.07] pt-6">{beatsEditor}</div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { cx } from "./ui";
+import { cx } from "@/lib/cx";
 
 /** SeerahVerse mark: an owl-eye monogram on a gradient tile. */
 export function LogoMark({ className }: { className?: string }) {

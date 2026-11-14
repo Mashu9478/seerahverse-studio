@@ -48,6 +48,7 @@ export interface VideoListItem {
   duration_sec: number | null;
   error: string | null;
   auto_render: boolean;
+  is_public?: boolean;
   created_at: string;
   updated_at: string;
   started_at: string | null;
