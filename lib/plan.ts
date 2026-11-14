@@ -165,6 +165,95 @@ export const SceneSchema = z.discriminatedUnion("type", [
 export type Scene = z.infer<typeof SceneSchema>;
 export type Beat = z.infer<typeof BeatSchema>;
 
+
+/* ------------------------------------------------------------------ */
+/* Diagram explainer ("objects explain it") — engine/explainer.py        */
+/* ------------------------------------------------------------------ */
+
+export const EXPLAINER_ACTIONS = [
+  "show", "hide", "pop", "wipe", "move", "scale", "fill", "camera", "label", "unlabel", "flow", "pulse",
+] as const;
+
+const num = z.number();
+const pt = z.array(num).describe("[x, y] in stage units");
+
+export const ExplainerActionSchema = z
+  .object({
+    do: z.enum(EXPLAINER_ACTIONS),
+    id: z.string().optional().describe("Stage element id (show/hide/pop/wipe/move/scale/fill) or label id (label/unlabel; '*' = all)"),
+    at: num.optional().describe("Seconds after the beat starts"),
+    word: z.string().optional().describe("Or: sync to this word of the beat's narration"),
+    dur: num.optional().describe("Animation length in seconds (flow: how long particles keep coming)"),
+    dir: z.enum(["up", "down", "left", "right"]).optional().describe("wipe direction (the part grows this way)"),
+    box: z.array(num).nullable().optional().describe("wipe: [x, y, w, h] area the part occupies. camera: [x, y, width] (height follows the frame shape) or null = whole stage"),
+    to: z.union([z.array(num), num]).optional().describe("move: [dx, dy] offset; scale: factor"),
+    origin: pt.optional().describe("pop/scale: centre point"),
+    color: z.string().optional().describe("fill colour / flow colour / pulse colour, #RRGGBB"),
+    text: z.string().optional().describe("label text (1-3 words)"),
+    point: pt.optional().describe("label: point on the part; pulse: centre"),
+    side: z.enum(["left", "right"]).optional(),
+    len: num.optional().describe("label leader-line length in screen pixels"),
+    dy: num.optional().describe("label: vertical offset of the text in screen pixels"),
+    path: z.array(pt).optional().describe("flow: polyline the particles travel along"),
+    count: num.optional(),
+    speed: num.optional().describe("flow: seconds for one particle to travel the whole path"),
+    r: num.optional().describe("flow particle / pulse radius"),
+    shape: z.enum(["dot", "steam"]).optional(),
+    layer: z.string().optional().describe("flow: id of an empty <g> to draw particles in (controls what is in front)"),
+    wiggle: num.optional(),
+    sfx: z.string().optional().describe("pop | whoosh | sparkle | ding | tick | plop"),
+  })
+  .passthrough();
+export type ExplainerAction = z.infer<typeof ExplainerActionSchema>;
+
+export const ExplainerBeatSchema = z.object({
+  say: z.string().describe("Narration, TTS-friendly"),
+  caption: z.string().optional().describe("On-screen caption if different from say"),
+  pause: num.optional(),
+  actions: z.array(ExplainerActionSchema).default([]),
+});
+export type ExplainerBeat = z.infer<typeof ExplainerBeatSchema>;
+
+export const ExplainerStepSchema = z.object({
+  tag: z.string().nullable().optional().describe('Step counter like "Step 2 / 4"; omit for intro/recap'),
+  title: z.string().describe("Big header, ≤ 32 characters"),
+  highlight: z.string().optional().describe("Word(s) of the title to colour"),
+  beats: z.array(ExplainerBeatSchema).min(1),
+});
+export type ExplainerStep = z.infer<typeof ExplainerStepSchema>;
+
+export const ExplainerPartSchema = z.object({
+  stage: z.string().describe("Complete <svg viewBox='0 0 W H'> with id'd parts"),
+  hidden: z.array(z.string()).default([]).describe("ids invisible at the start"),
+  camera: z.array(num).nullable().optional().describe("Starting camera [x, y, width] or null = whole stage"),
+  steps: z.array(ExplainerStepSchema).min(1),
+});
+export type ExplainerPart = z.infer<typeof ExplainerPartSchema>;
+
+export const ExplainerThemeSchema = z.object({
+  bg: z.string().optional(),
+  ink: z.string().optional(),
+  label: z.string().optional(),
+  accent: z.string().optional(),
+});
+
+export const ExplainerSchema = z.object({
+  theme: ExplainerThemeSchema.optional(),
+  parts: z.array(ExplainerPartSchema).min(1),
+});
+export type Explainer = z.infer<typeof ExplainerSchema>;
+
+export type VideoStyle = "presenter" | "explainer";
+export const VIDEO_STYLES: { id: VideoStyle; name: string; desc: string }[] = [
+  { id: "presenter", name: "Character presenter", desc: "A friendly character teaches with emoji visuals, quizzes and scenes." },
+  { id: "explainer", name: "Diagram explainer", desc: "One illustrated object is cut open and changes step by step — labels, zooms and moving parts show how it works." },
+];
+
+/** All explainer beats in order. */
+export function explainerBeats(e: Explainer | undefined | null): ExplainerBeat[] {
+  return (e?.parts ?? []).flatMap((p) => p.steps.flatMap((s) => s.beats));
+}
+
 export const BrandSchema = z.object({
   channel: z.string(),
   tagline: z.string(),
@@ -189,7 +278,16 @@ export const PlanSchema = z.object({
   age_group: z.string(),
   brand: BrandSchema,
   palette: z.enum(["bright", "pastel", "ocean", "sunset", "forest", "candy"]),
-  scenes: z.array(SceneSchema).min(1, "Add at least one scene"),
+  style: z.enum(["presenter", "explainer"]).optional(),
+  /** Present when style === "explainer"; scenes is then empty. */
+  explainer: ExplainerSchema.optional(),
+  scenes: z.array(SceneSchema),
+}).superRefine((p, ctx) => {
+  if (p.style === "explainer") {
+    if (!p.explainer) ctx.addIssue({ code: "custom", path: ["explainer"], message: "The diagram explainer script is missing" });
+  } else if (p.scenes.length < 1) {
+    ctx.addIssue({ code: "custom", path: ["scenes"], message: "Add at least one scene" });
+  }
 });
 
 export type VideoPlan = z.infer<typeof PlanSchema>;
@@ -237,6 +335,7 @@ export interface VideoSettings {
   sfx: boolean;
   mascot: boolean;
   presenter: PresenterId;
+  style?: VideoStyle;
   captions: boolean;
   palette: VideoPlan["palette"];
   chip: string;
@@ -253,6 +352,7 @@ export function planShell(input: {
   age_group: string;
   settings: VideoSettings;
   scenes: Scene[];
+  explainer?: Explainer;
 }): VideoPlan {
   const s = input.settings;
   return {
@@ -277,7 +377,9 @@ export function planShell(input: {
       subscribe: s.subscribe,
     },
     palette: s.palette,
-    scenes: input.scenes,
+    style: input.explainer ? "explainer" : "presenter",
+    ...(input.explainer ? { explainer: input.explainer, mascot: false, presenter: "none" as PresenterId } : {}),
+    scenes: input.explainer ? [] : input.scenes,
   };
 }
 
@@ -299,11 +401,17 @@ export function sceneSeconds(scene: Scene, speed = 0.92): number {
   return t;
 }
 
-export function planSeconds(plan: Pick<VideoPlan, "scenes" | "speed">): number {
+export function planSeconds(plan: Pick<VideoPlan, "scenes" | "speed"> & { explainer?: Explainer }): number {
+  if (plan.explainer) {
+    const wps = 2.55 * plan.speed;
+    const beats = explainerBeats(plan.explainer);
+    return 0.6 + 1.2 * plan.explainer.parts.length + beats.reduce((a, b) => a + wordCount(b.say) / wps + 0.15 + (b.pause ?? 0.35), 0);
+  }
   return plan.scenes.reduce((a, s) => a + sceneSeconds(s, plan.speed), 0);
 }
 
-export function planWords(plan: Pick<VideoPlan, "scenes">): number {
+export function planWords(plan: Pick<VideoPlan, "scenes"> & { explainer?: Explainer }): number {
+  if (plan.explainer) return explainerBeats(plan.explainer).reduce((x, b) => x + wordCount(b.say), 0);
   return plan.scenes.reduce((a, s) => a + (s.beats ?? []).reduce((x, b) => x + wordCount(b.say), 0), 0);
 }
 

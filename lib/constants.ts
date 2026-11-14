@@ -96,6 +96,7 @@ export const DEFAULT_APP_SETTINGS = {
   sfx: true,
   mascot: true,
   presenter: "ollie" as string,
+  style: "presenter" as string,
   captions: true,
   palette: "bright",
   format: "long",
