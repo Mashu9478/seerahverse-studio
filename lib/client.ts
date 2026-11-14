@@ -23,7 +23,7 @@ export async function api<T = unknown>(url: string, opts: { method?: string; bod
   });
   const data = (await res.json().catch(() => ({}))) as { error?: string; issues?: string[] };
   if (res.status === 401 && typeof window !== "undefined" && !url.includes("/api/auth/")) {
-    window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
+    window.location.href = `/admin?next=${encodeURIComponent(window.location.pathname)}`;
   }
   if (!res.ok) throw new ApiError(data.error || `Something went wrong (${res.status})`, res.status, data.issues);
   return data as T;

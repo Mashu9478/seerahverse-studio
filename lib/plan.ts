@@ -1,3 +1,4 @@
+import { PRESENTER_IDS, type PresenterId } from "./constants";
 import { z } from "zod";
 
 /* ------------------------------------------------------------------ */
@@ -183,6 +184,7 @@ export const PlanSchema = z.object({
   music: z.enum(["none", "cheerful", "calm"]),
   sfx: z.boolean(),
   mascot: z.boolean(),
+  presenter: z.enum(PRESENTER_IDS).optional(),
   captions: z.boolean(),
   age_group: z.string(),
   brand: BrandSchema,
@@ -234,6 +236,7 @@ export interface VideoSettings {
   music: "none" | "cheerful" | "calm";
   sfx: boolean;
   mascot: boolean;
+  presenter: PresenterId;
   captions: boolean;
   palette: VideoPlan["palette"];
   chip: string;
@@ -262,7 +265,8 @@ export function planShell(input: {
     speed: clamp(s.speed, 0.8, 1.15),
     music: s.music,
     sfx: s.sfx,
-    mascot: s.mascot,
+    mascot: s.presenter !== "none",
+    presenter: s.presenter,
     captions: s.captions,
     age_group: input.age_group,
     brand: {

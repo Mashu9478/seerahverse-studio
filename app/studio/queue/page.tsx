@@ -69,7 +69,7 @@ function JobCard({ j, onAction, onOpen }: { j: VideoListItem; onAction: () => vo
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2 lg:w-48 lg:justify-end">
             {j.status === "review" && (
-              <Link href={`/videos/${j.id}/edit`}>
+              <Link href={`/studio/videos/${j.id}/edit`}>
                 <Button size="sm" icon={<Eye className="h-4 w-4" />}>
                   Review script
                 </Button>
@@ -159,7 +159,7 @@ export default function QueuePage() {
         title="Queue"
         subtitle="Watch your videos move through the studio. This page updates live."
         actions={
-          <Link href="/create">
+          <Link href="/studio/create">
             <Button icon={<Sparkles className="h-4 w-4" />}>New video</Button>
           </Link>
         }
@@ -176,7 +176,7 @@ export default function QueuePage() {
           title="Nothing in the queue"
           text="The studio is resting. Start a video or a batch and you'll see it come to life here."
           action={
-            <Link href="/create">
+            <Link href="/studio/create">
               <Button icon={<Sparkles className="h-4 w-4" />}>Create a video</Button>
             </Link>
           }

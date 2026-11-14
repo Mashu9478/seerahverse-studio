@@ -34,6 +34,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
     patch.youtube = y.data;
   }
   if (typeof body.topic === "string") patch.topic = body.topic.slice(0, 200);
+  if (typeof body.is_public === "boolean") patch.is_public = body.is_public;
   if (Array.isArray(body.warnings)) patch.warnings = body.warnings.filter((w) => typeof w === "string");
   await updateVideo(id, patch);
   return NextResponse.json({ ok: true });

@@ -16,6 +16,8 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@fontsource/fredoka": "^5.3.0",
     "@fontsource/nunito": "^5.3.0",
+    "@fontsource/plus-jakarta-sans": "^5.3.0",
+    "@fontsource/sora": "^5.3.0",
     "@neondatabase/serverless": "^1.2.1",
     "@vercel/blob": "^2.9.0",
     "@vercel/sandbox": "^4.0.0",

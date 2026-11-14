@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS videos (
   finished_at timestamptz NULL
 );
 
+ALTER TABLE videos ADD COLUMN IF NOT EXISTS is_public boolean NOT NULL DEFAULT true;
 CREATE INDEX IF NOT EXISTS videos_status_idx ON videos (status, created_at);
 CREATE INDEX IF NOT EXISTS videos_created_idx ON videos (created_at DESC);
 CREATE INDEX IF NOT EXISTS videos_batch_idx ON videos (batch_id);

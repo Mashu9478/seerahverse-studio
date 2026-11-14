@@ -1,6 +1,7 @@
 import { generateObject, gateway, type ModelMessage } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
+import { characterById } from "./constants";
 import {
   AiOutlineSchema,
   AiScenesSchema,
@@ -41,8 +42,16 @@ Visual elements may have "at": beat index (0-based, within that scene) when they
 - outro: { title ("Great job, stars!"), subtitle? } — goodbye; if subscribe is allowed, kindly ask to like and subscribe; if greeting allowed you may end with "Allah Hafiz!".
 Single emoji characters only (e.g. "🍎", not ":apple:"). Headings ≤ 40 characters (Shorts ≤ 28).`;
 
-function systemPrompt() {
-  return `You are the head scriptwriter for "SeerahVerse Academia", an Islamic homeschooling channel that makes animated educational YouTube videos for children. You write a structured VideoPlan that an animation engine turns into a narrated cartoon (friendly owl mascot "Ollie", emoji visuals, captions).
+function presenterLine(id: string | undefined) {
+  if (id === "none")
+    return `There is NO on-screen character in this video: narrate as a warm, friendly teacher in the first person ("Let's learn…"), never introduce yourself by name and never mention a mascot or presenter.`;
+  const c = characterById(id);
+  return `The on-screen presenter is ${c.name} (${c.desc.toLowerCase()}). The narrator speaks AS ${c.short}: introduce yourself once in the opening ("I'm ${c.short}!") and stay in character; never mention any other mascot.`;
+}
+
+function systemPrompt(presenter?: string) {
+  return `You are the head scriptwriter for "SeerahVerse Academia", an Islamic homeschooling channel that makes animated educational YouTube videos for children. You write a structured VideoPlan that an animation engine turns into a narrated cartoon (an animated presenter character, emoji visuals, captions).
+PRESENTER: ${presenterLine(presenter)}
 
 QUALITY RULES
 - Teach like the best primary teacher: hook → explain with concrete visuals → worked examples → practice with "say it out loud!" → recap → warm goodbye.
@@ -72,6 +81,7 @@ interface GenInput {
   greeting: boolean;
   subscribe: boolean;
   channel: string;
+  presenter: string;
   image_urls: string[];
 }
 
@@ -143,6 +153,7 @@ export function genInputFromVideo(v: VideoRow): GenInput {
     greeting: v.settings.greeting ?? true,
     subscribe: v.settings.subscribe ?? true,
     channel: v.settings.channel ?? "SeerahVerse Academia",
+    presenter: v.settings.presenter ?? (v.settings.mascot === false ? "none" : "ollie"),
     image_urls: v.image_urls ?? [],
   };
 }
@@ -165,7 +176,7 @@ export async function generateScript(
     const outline = await generateObject({
       model: model(modelId),
       schema: AiOutlineSchema,
-      instructions: systemPrompt(),
+      instructions: systemPrompt(g.presenter),
       messages: userMessage(
         g,
         briefText(
@@ -185,7 +196,7 @@ export async function generateScript(
         generateObject({
           model: model(modelId),
           schema: AiScenesSchema,
-          instructions: systemPrompt(),
+          instructions: systemPrompt(g.presenter),
           messages: userMessage(
             g,
             briefText(
@@ -209,7 +220,7 @@ export async function generateScript(
     const res = await generateObject({
       model: model(modelId),
       schema: AiScriptSchema,
-      instructions: systemPrompt(),
+      instructions: systemPrompt(g.presenter),
       messages: userMessage(g, briefText(g)),
       maxOutputTokens: g.format === "short" ? 6000 : 16000,
       abortSignal: AbortSignal.timeout(TIMEOUT),
@@ -248,7 +259,7 @@ export async function regenerateScene(
   const res = await generateObject({
     model: model(modelId),
     schema: z.object({ scene: SceneSchema }),
-    instructions: systemPrompt(),
+    instructions: systemPrompt(g.presenter),
     messages: userMessage(
       g,
       briefText(

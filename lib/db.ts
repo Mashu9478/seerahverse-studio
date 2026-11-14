@@ -37,6 +37,7 @@ const SCHEMA = [
     updated_at timestamptz NOT NULL DEFAULT now(),
     started_at timestamptz NULL,
     finished_at timestamptz NULL)`,
+  `ALTER TABLE videos ADD COLUMN IF NOT EXISTS is_public boolean NOT NULL DEFAULT true`,
   `CREATE INDEX IF NOT EXISTS videos_status_idx ON videos (status, created_at)`,
   `CREATE INDEX IF NOT EXISTS videos_created_idx ON videos (created_at DESC)`,
   `CREATE INDEX IF NOT EXISTS videos_batch_idx ON videos (batch_id)`,
@@ -99,6 +100,7 @@ export type VideoStatus =
 
 export interface VideoRow {
   id: string;
+  is_public?: boolean;
   batch_id: string | null;
   status: VideoStatus;
   stage: string | null;
@@ -132,10 +134,10 @@ export interface VideoRow {
 /** Columns safe to send to the browser (no job token). */
 export const PUBLIC_COLS = `id, batch_id, status, stage, progress, message, topic, subject, age_group, details, image_urls,
   format, target_seconds, settings, plan, youtube, warnings, video_url, thumb_url, srt_url, duration_sec, sandbox_id,
-  error, auto_render, created_at, updated_at, started_at, finished_at`;
+  error, auto_render, is_public, created_at, updated_at, started_at, finished_at`;
 
 export const LIST_COLS = `id, batch_id, status, stage, progress, message, topic, subject, age_group, format, target_seconds,
-  youtube, video_url, thumb_url, srt_url, duration_sec, error, auto_render, created_at, updated_at, started_at, finished_at,
+  youtube, video_url, thumb_url, srt_url, duration_sec, error, auto_render, is_public, created_at, updated_at, started_at, finished_at,
   (plan->>'title') AS title, COALESCE(jsonb_array_length(warnings), 0) AS warning_count`;
 
 export async function getVideo(id: string): Promise<VideoRow | null> {

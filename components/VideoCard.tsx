@@ -196,7 +196,7 @@ export function VideoModal({ id, onClose, onDeleted }: { id: string | null; onCl
               </div>
             )}
             <div className="flex flex-wrap gap-2">
-              <Link href={`/videos/${v.id}/edit`}>
+              <Link href={`/studio/videos/${v.id}/edit`}>
                 <Button variant="secondary" icon={<Pencil className="h-4 w-4" />}>
                   Edit script
                 </Button>

@@ -191,7 +191,7 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
       const r = await api<{ warnings: string[] }>(`/api/videos/${id}/approve`, { body: { plan, youtube: yt } });
       setDirty(false);
       toast.success("🎬 Sent to the render studio!", { description: r.warnings.length ? `${r.warnings.length} note(s) to double-check later.` : undefined });
-      router.push("/queue");
+      router.push("/studio/queue");
     } catch (e) {
       if (e instanceof ApiError && e.issues) setIssues(e.issues);
       else toast.error(e instanceof Error ? e.message : "Couldn't start rendering");
@@ -269,7 +269,7 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
         <h1 className="mt-3 text-2xl font-semibold">{video.status === "failed" ? "The script couldn't be written" : "Claude is writing the script…"}</h1>
         <p className="mt-1 text-slate-500">{video.status === "failed" ? video.error : video.message}</p>
         <div className="mt-5 flex justify-center gap-2">
-          <Link href="/queue">
+          <Link href="/studio/queue">
             <Button variant="secondary">Back to queue</Button>
           </Link>
           {video.status === "failed" && (
@@ -298,6 +298,7 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
     music: plan.music,
     sfx: plan.sfx,
     mascot: plan.mascot,
+    presenter: plan.presenter ?? (plan.mascot ? "ollie" : "none"),
     captions: plan.captions,
     palette: plan.palette,
     chip: plan.brand.chip ?? "",
@@ -309,7 +310,7 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
     <div className="space-y-5">
       {/* header */}
       <div className="card sticky top-16 z-30 flex flex-col gap-3 p-3 sm:p-4 lg:top-4 lg:flex-row lg:items-center">
-        <Link href="/queue" className="hidden rounded-xl p-2 text-brand-600 hover:bg-brand-50 lg:block" aria-label="Back">
+        <Link href="/studio/queue" className="hidden rounded-xl p-2 text-brand-600 hover:bg-brand-50 lg:block" aria-label="Back">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div className="min-w-0 flex-1">
@@ -533,7 +534,8 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
                         speed: v.speed,
                         music: v.music,
                         sfx: v.sfx,
-                        mascot: v.mascot,
+                        mascot: v.presenter !== "none",
+                        presenter: v.presenter as typeof plan.presenter,
                         captions: v.captions,
                         palette: v.palette,
                         brand: { ...plan.brand, chip: v.chip || undefined, greeting: v.greeting, subscribe: v.subscribe },

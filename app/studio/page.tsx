@@ -76,12 +76,12 @@ export default function Dashboard() {
           Type a topic or drop textbook pages — Claude writes the lesson, Ollie presents it, and you get a ready-to-upload video for {settings?.channel ?? "your channel"}.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/create">
+          <Link href="/studio/create">
             <Button size="lg" variant="warm" icon={<Sparkles className="h-5 w-5" />}>
               Create a video
             </Button>
           </Link>
-          <Link href="/batch">
+          <Link href="/studio/batch">
             <Button size="lg" variant="secondary" icon={<Layers className="h-5 w-5" />}>
               Batch create
             </Button>
@@ -109,7 +109,7 @@ export default function Dashboard() {
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-2xl font-semibold">⚡ Working on it</h2>
-            <Link href="/queue" className="flex items-center gap-1 font-bold text-brand-600 hover:underline">
+            <Link href="/studio/queue" className="flex items-center gap-1 font-bold text-brand-600 hover:underline">
               Open queue <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -122,7 +122,7 @@ export default function Dashboard() {
                     <div className="truncate text-sm text-slate-500">{j.message}</div>
                   </div>
                   {j.status === "review" ? (
-                    <Link href={`/videos/${j.id}/edit`}>
+                    <Link href={`/studio/videos/${j.id}/edit`}>
                       <Button size="sm">Review 👀</Button>
                     </Link>
                   ) : (
@@ -140,7 +140,7 @@ export default function Dashboard() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-2xl font-semibold">🎞️ Recent videos</h2>
-          <Link href="/library" className="flex items-center gap-1 font-bold text-brand-600 hover:underline">
+          <Link href="/studio/library" className="flex items-center gap-1 font-bold text-brand-600 hover:underline">
             Library <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -156,7 +156,7 @@ export default function Dashboard() {
             title="No videos yet"
             text="Your first cartoon lesson is one click away. Try “Doubles for 6-year-olds” or upload a textbook page!"
             action={
-              <Link href="/create">
+              <Link href="/studio/create">
                 <Button icon={<Sparkles className="h-4 w-4" />}>Create my first video</Button>
               </Link>
             }

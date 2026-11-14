@@ -22,6 +22,7 @@ export function styleFromSettings(s: AppSettings): StyleValue {
     music: s.music as StyleValue["music"],
     sfx: s.sfx,
     mascot: s.mascot,
+    presenter: s.presenter ?? (s.mascot ? "ollie" : "none"),
     captions: s.captions,
     palette: s.palette as StyleValue["palette"],
     chip: s.chip,

@@ -113,7 +113,7 @@ export default function BatchPage() {
         },
       });
       toast.success(`🚀 ${r.ids.length} videos started!`, { description: "Claude is writing all the scripts in parallel." });
-      router.push("/queue");
+      router.push("/studio/queue");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't start the batch");
       setBusy(false);

@@ -1,10 +1,32 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE, isInternalCall, verifySessionToken } from "@/lib/auth";
 
-const PUBLIC = [/^\/login$/, /^\/api\/auth\//, /^\/api\/jobs\/[^/]+\/(progress|done)$/, /^\/voices\//, /^\/favicon/, /^\/icon/];
+/** Anyone may see these: the public showcase, the admin login page and engine callbacks. */
+const PUBLIC = [
+  /^\/$/,
+  /^\/watch\/[^/]+$/,
+  /^\/admin$/,
+  /^\/api\/public\//,
+  /^\/api\/auth\//,
+  /^\/api\/jobs\/[^/]+\/(progress|done)$/,
+  /^\/voices\//,
+  /^\/characters\//,
+  /^\/favicon/,
+  /^\/icon/,
+  /^\/robots\.txt$/,
+];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const authed = await verifySessionToken(req.cookies.get(COOKIE)?.value);
+
+  // already signed in → skip the login page
+  if (pathname === "/admin" && authed) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/studio";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
   if (PUBLIC.some((r) => r.test(pathname))) return NextResponse.next();
 
   if (pathname.startsWith("/api/") && (await isInternalCall(req.headers.get("x-internal-key")))) {
@@ -14,15 +36,14 @@ export async function middleware(req: NextRequest) {
   if (pathname === "/api/upload" && req.method === "POST" && req.headers.get("x-vercel-signature")) {
     return NextResponse.next();
   }
-
-  const ok = await verifySessionToken(req.cookies.get(COOKIE)?.value);
-  if (ok) return NextResponse.next();
+  if (authed) return NextResponse.next();
 
   if (pathname.startsWith("/api/")) {
     return NextResponse.json({ error: "Please log in again." }, { status: 401 });
   }
   const url = req.nextUrl.clone();
-  url.pathname = "/login";
+  url.pathname = "/admin";
+  url.search = "";
   url.searchParams.set("next", pathname);
   return NextResponse.redirect(url);
 }

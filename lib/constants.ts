@@ -69,6 +69,21 @@ export const SCENE_TYPES = [
 
 export type SceneTypeId = (typeof SCENE_TYPES)[number]["type"];
 
+/** On-screen presenter characters (drawn by the engine). "none" = no character, narrator voice only. */
+export const CHARACTERS = [
+  { id: "ollie", name: "Ollie the Owl", short: "Ollie", desc: "Wise, cheerful owl in a graduation cap", img: "/characters/ollie.png", color: "#8B5CF6" },
+  { id: "maryam", name: "Maryam", short: "Maryam", desc: "Kind teacher girl in a hijab", img: "/characters/maryam.png", color: "#F472B6" },
+  { id: "yusuf", name: "Yusuf", short: "Yusuf", desc: "Curious boy with a kufi", img: "/characters/yusuf.png", color: "#38BDF8" },
+  { id: "robo", name: "Robo the Robot", short: "Robo", desc: "Friendly science robot", img: "/characters/robo.png", color: "#22D3EE" },
+  { id: "sheru", name: "Sheru the Lion Cub", short: "Sheru", desc: "Brave, playful lion cub", img: "/characters/sheru.png", color: "#FBBF24" },
+  { id: "none", name: "No character", short: "None", desc: "Just the lesson visuals and a teacher's voice", img: "/characters/none.png", color: "#9A97B0" },
+] as const;
+export type PresenterId = (typeof CHARACTERS)[number]["id"];
+export const PRESENTER_IDS = CHARACTERS.map((c) => c.id) as [PresenterId, ...PresenterId[]];
+export function characterById(id: string | undefined | null) {
+  return CHARACTERS.find((c) => c.id === id) ?? CHARACTERS[0];
+}
+
 export const TWEMOJI_CREDIT = "Emoji graphics: Twemoji by X Corp & contributors, CC-BY 4.0.";
 
 export const DEFAULT_APP_SETTINGS = {
@@ -80,6 +95,7 @@ export const DEFAULT_APP_SETTINGS = {
   music: "none",
   sfx: true,
   mascot: true,
+  presenter: "ollie" as string,
   captions: true,
   palette: "bright",
   format: "long",

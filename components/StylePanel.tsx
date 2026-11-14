@@ -11,6 +11,7 @@ export interface StyleValue {
   music: "none" | "cheerful" | "calm";
   sfx: boolean;
   mascot: boolean;
+  presenter: string;
   captions: boolean;
   palette: "bright" | "pastel" | "ocean" | "sunset" | "forest" | "candy";
   chip: string;

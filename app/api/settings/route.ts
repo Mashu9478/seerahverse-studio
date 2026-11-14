@@ -15,6 +15,7 @@ const Patch = z
     music: z.enum(["none", "cheerful", "calm"]),
     sfx: z.boolean(),
     mascot: z.boolean(),
+    presenter: z.string().max(20),
     captions: z.boolean(),
     palette: z.enum(["bright", "pastel", "ocean", "sunset", "forest", "candy"]),
     format: z.enum(["long", "short"]),

@@ -22,7 +22,7 @@ function LoginForm() {
     try {
       await api("/api/auth/login", { body: { password: pw } });
       const next = sp.get("next");
-      router.replace(next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
+      router.replace(next && next.startsWith("/") && !next.startsWith("//") ? next : "/studio");
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Login failed");

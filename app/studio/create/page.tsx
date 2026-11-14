@@ -86,7 +86,7 @@ export default function CreatePage() {
         },
       });
       toast.success("✍️ Claude is writing your script!", { description: review ? "You'll get a 👀 when it's ready to review." : "It will render automatically." });
-      router.push("/queue");
+      router.push("/studio/queue");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't start");
       setBusy(false);

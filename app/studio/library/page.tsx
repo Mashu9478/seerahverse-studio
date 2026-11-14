@@ -58,7 +58,7 @@ function Library() {
         title="Library"
         subtitle="All your finished videos — watch, download and copy YouTube details."
         actions={
-          <Link href="/create">
+          <Link href="/studio/create">
             <Button icon={<Sparkles className="h-4 w-4" />}>New video</Button>
           </Link>
         }
@@ -102,7 +102,7 @@ function Library() {
           title="No videos here yet"
           text={status === "done" ? "Finished videos appear here. Start one and come back in a few minutes!" : "Try a different filter."}
           action={
-            <Link href="/create">
+            <Link href="/studio/create">
               <Button icon={<Sparkles className="h-4 w-4" />}>Create a video</Button>
             </Link>
           }

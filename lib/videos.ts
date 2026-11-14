@@ -3,7 +3,7 @@ import { getAppSettings, getVideo, q, updateVideo } from "./db";
 import { generateScript } from "./ai";
 import { tick } from "./queue";
 import type { VideoSettings } from "./plan";
-import type { AppSettings } from "./constants";
+import { PRESENTER_IDS, type AppSettings, type PresenterId } from "./constants";
 
 export const SettingsInput = z
   .object({
@@ -12,6 +12,7 @@ export const SettingsInput = z
     music: z.enum(["none", "cheerful", "calm"]),
     sfx: z.boolean(),
     mascot: z.boolean(),
+    presenter: z.enum(PRESENTER_IDS),
     captions: z.boolean(),
     palette: z.enum(["bright", "pastel", "ocean", "sunset", "forest", "candy"]),
     chip: z.string().max(40),
@@ -39,7 +40,8 @@ export function videoSettingsFrom(app: AppSettings, s: z.infer<typeof SettingsIn
     speed: s.speed ?? app.speed,
     music: (s.music ?? app.music) as VideoSettings["music"],
     sfx: s.sfx ?? app.sfx,
-    mascot: s.mascot ?? app.mascot,
+    mascot: (s.presenter ?? app.presenter) !== "none" && (s.mascot ?? app.mascot),
+    presenter: (s.presenter ?? (s.mascot === false ? "none" : (app.presenter as PresenterId) ?? "ollie")) as PresenterId,
     captions: s.captions ?? app.captions,
     palette: (s.palette ?? app.palette) as VideoSettings["palette"],
     chip: s.chip ?? app.chip,
