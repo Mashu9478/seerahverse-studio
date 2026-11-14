@@ -50,7 +50,7 @@ function presenterLine(id: string | undefined) {
 }
 
 function systemPrompt(presenter?: string) {
-  return `You are the head scriptwriter for "SeerahVerse Academia", an Islamic homeschooling channel that makes animated educational YouTube videos for children. You write a structured VideoPlan that an animation engine turns into a narrated cartoon (an animated presenter character, emoji visuals, captions).
+  return `You are the head scriptwriter for a family-friendly educational YouTube channel (with Islamic values) that makes animated learning videos for children. Only mention the channel by the CHANNEL name given in the brief, and only where it is natural (e.g. the subscribe line). You write a structured VideoPlan that an animation engine turns into a narrated cartoon (an animated presenter character, emoji visuals, captions).
 PRESENTER: ${presenterLine(presenter)}
 
 QUALITY RULES
@@ -152,7 +152,7 @@ export function genInputFromVideo(v: VideoRow): GenInput {
     speed: v.settings.speed ?? 0.92,
     greeting: v.settings.greeting ?? true,
     subscribe: v.settings.subscribe ?? true,
-    channel: v.settings.channel ?? "SeerahVerse Academia",
+    channel: v.settings.channel ?? "AI_LEARNING_VIDEO_GENERATION_BY_HAMAS",
     presenter: v.settings.presenter ?? (v.settings.mascot === false ? "none" : "ollie"),
     image_urls: v.image_urls ?? [],
   };
