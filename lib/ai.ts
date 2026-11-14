@@ -514,7 +514,11 @@ export async function generateExplainer(
   let theme: z.infer<typeof AiExplainerTheme> | undefined;
   let parts: ExplainerPart[];
 
-  if (g.format === "short") {
+  // One reply can hold one diagram plus about a minute of script. Longer videos are split into ~1-minute
+  // parts (each its own diagram) that are drawn in parallel, so no reply runs past the output limit.
+  const SINGLE_MAX = 75;
+  const nParts = Math.max(2, Math.min(8, Math.ceil(g.target_seconds / 60)));
+  if (g.target_seconds <= SINGLE_MAX) {
     await onProgress?.("Drawing the diagram and writing the script…");
     const res = await explainerPartWithRetry(
       async (fix, ms) =>
@@ -524,12 +528,12 @@ export async function generateExplainer(
             schema: AiExplainerShortSchema,
             instructions,
             messages: userMessage(g, explainerBrief(g, fix)),
-            maxOutputTokens: 16000,
+            maxOutputTokens: 20000,
             abortSignal: AbortSignal.timeout(ms),
             maxRetries: 1,
           })
         ).object,
-      "short",
+      g.format,
       "The drawing",
       TIMEOUT,
     );
@@ -547,14 +551,18 @@ export async function generateExplainer(
         g,
         explainerBrief(
           g,
-          `\nFIRST produce only an OUTLINE: 2–6 consecutive parts whose seconds add up to ${g.target_seconds}. Each part explains one thing with ONE object/diagram (a different drawing per part, or the same object at a different zoom/state). Part 1 opens with the hook; the last part ends with the recap.`,
+          `\nFIRST produce only an OUTLINE: exactly ${nParts} consecutive parts (about ${Math.round(g.target_seconds / nParts)} seconds each) whose seconds add up to ${g.target_seconds}. Each part explains one thing with ONE object/diagram (a different drawing per part, or the same object at a different zoom/state). Part 1 opens with the hook; the last part ends with the recap.${
+            g.format === "short"
+              ? " This is still ONE vertical Short: the parts play back to back as one continuous video, so keep the pace fast and the hand-over between parts smooth (ignore the 'ONE object' rule for Shorts — use one object per part)."
+              : ""
+          }`,
         ),
       ),
       maxOutputTokens: 3000,
       abortSignal: AbortSignal.timeout(90_000),
       maxRetries: 2,
     });
-    const plan = outline.object.parts.slice(0, 6);
+    const plan = outline.object.parts.slice(0, 8);
     if (!plan.length) throw new Error("The AI didn't plan any parts — please press Retry.");
     title = outline.object.title;
     youtube = outline.object.youtube;
@@ -579,12 +587,12 @@ export async function generateExplainer(
                     }${i === plan.length - 1 ? " This is the LAST part: end with a recap step (no tag) covering the whole video." : " Do NOT add a final recap or goodbye."}${fix}`,
                   ),
                 ),
-                maxOutputTokens: 16000,
+                maxOutputTokens: 20000,
                 abortSignal: AbortSignal.timeout(ms),
                 maxRetries: 1,
               })
             ).object,
-          "long",
+          g.format,
           `Diagram ${i + 1}`,
           TIMEOUT - 100_000,
         ),

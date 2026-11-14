@@ -145,5 +145,7 @@ export function friendlyAiError(msg: string) {
   if (/unauthorized|401|oidc|api key/i.test(msg))
     return "The AI Gateway couldn't authenticate. On Vercel this works automatically; locally set AI_GATEWAY_API_KEY. (" + msg.slice(0, 160) + ")";
   if (/timeout|aborted/i.test(msg)) return "The script took too long to write. Try a shorter video or press Retry.";
+  if (/no object generated/i.test(msg))
+    return "The AI's answer got cut off before it finished. Press Retry — if it happens again, choose a shorter length.";
   return msg.slice(0, 500);
 }
