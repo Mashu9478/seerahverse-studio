@@ -785,7 +785,11 @@ def run_job(plan, out_dir, rep=None, stills=None):
             _R[pi].frame(t - tls[pi]["off"]).save(os.path.join(out_dir, f"still_{t:06.2f}.png"))
         return None
     rep.set("render", 28, "Drawing the diagram")
-    workers = int(os.environ.get("WORKERS", os.cpu_count() or 2))
+    try:
+        cores = len(os.sched_getaffinity(0))
+    except Exception:
+        cores = os.cpu_count() or 2
+    workers = int(os.environ.get("WORKERS", max(1, min(8, cores))))
     jobs = []
     for pi, tl in enumerate(tls):
         nfr = int(math.ceil(tl["total"] * fps))
@@ -820,6 +824,7 @@ def run_job(plan, out_dir, rep=None, stills=None):
     os.replace(tmp, final)
     # thumbnail: a well-developed moment of the first diagram
     r0 = Renderer(tls[0]["part"], tls[0]["beats"], tls[0]["actions"], tls[0]["headers"], tls[0]["total"])
+    r0.captions = False
     tt = tls[0]["beats"][min(len(tls[0]["beats"]) - 1, max(0, len(tls[0]["beats"]) * 2 // 3))]["t"] + 1.2
     im = r0.frame(min(tt, tls[0]["total"] - 1))
     if im.width > im.height:
