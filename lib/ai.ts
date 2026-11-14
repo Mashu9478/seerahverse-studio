@@ -1,4 +1,5 @@
 import { generateObject, gateway, type ModelMessage } from "ai";
+import { createAnthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 import {
   AiOutlineSchema,
@@ -104,7 +105,16 @@ function userMessage(g: GenInput, text: string): ModelMessage[] {
   return [{ role: "user", content }];
 }
 
+/**
+ * Default: Vercel AI Gateway (OIDC on Vercel, needs a card / credits on the Vercel team).
+ * If ANTHROPIC_API_KEY is set, talk to Anthropic directly instead (pay-as-you-go on console.anthropic.com).
+ */
 function model(id: string) {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (key) {
+    const direct = id.replace(/^anthropic\//, "").replace(/\./g, "-");
+    return createAnthropic({ apiKey: key })(direct);
+  }
   return gateway(id);
 }
 

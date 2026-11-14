@@ -135,7 +135,9 @@ export async function runGeneration(id: string, base: string) {
 
 export function friendlyAiError(msg: string) {
   if (/credit|quota|payment|billing|insufficient/i.test(msg))
-    return "AI Gateway has no credits left. Add credits in Vercel → AI Gateway, then press Retry. (" + msg.slice(0, 160) + ")";
+    return /credit card/i.test(msg)
+      ? "Script writing needs AI access: add a payment card in Vercel → AI Gateway (you still get the free monthly credit), or add an ANTHROPIC_API_KEY in Vercel → Settings → Environment Variables. Then press Retry."
+      : "The AI has no credits left. Top up in Vercel → AI Gateway (or your Anthropic account if you use ANTHROPIC_API_KEY), then press Retry. (" + msg.slice(0, 160) + ")";
   if (/unauthorized|401|oidc|api key/i.test(msg))
     return "The AI Gateway couldn't authenticate. On Vercel this works automatically; locally set AI_GATEWAY_API_KEY. (" + msg.slice(0, 160) + ")";
   if (/timeout|aborted/i.test(msg)) return "The script took too long to write. Try a shorter video or press Retry.";
