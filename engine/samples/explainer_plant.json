@@ -1,0 +1,1211 @@
+{
+ "title": "How does a plant drink water?",
+ "w": 1080,
+ "h": 1920,
+ "fps": 30,
+ "voice": "af_heart",
+ "speed": 0.9,
+ "music": "calm",
+ "theme": {
+  "bg": "#EEF2F4",
+  "ink": "#1E2A30",
+  "label": "#24333B",
+  "accent": "#1C7ED6"
+ },
+ "hidden": [
+  "roots",
+  "root-hairs",
+  "stem-cut",
+  "leaf-veins",
+  "sun",
+  "stoma",
+  "soil-water"
+ ],
+ "stage": "<svg viewBox=\"0 0 1080 1920\">\n<defs>\n <linearGradient id=\"soilg\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#D4B08A\"/><stop offset=\"1\" stop-color=\"#B58B62\"/></linearGradient>\n <linearGradient id=\"skyg\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#EEF2F4\"/><stop offset=\"1\" stop-color=\"#E3EEF2\"/></linearGradient>\n</defs>\n<rect x=\"-600\" y=\"-600\" width=\"2280\" height=\"1785\" fill=\"url(#skyg)\"/>\n<g id=\"sun\"><line x1=\"997\" y1=\"500\" x2=\"1029\" y2=\"500\" stroke=\"#FFC078\" stroke-width=\"10\" stroke-linecap=\"round\"/><line x1=\"985\" y1=\"546\" x2=\"1012\" y2=\"562\" stroke=\"#FFC078\" stroke-width=\"10\" stroke-linecap=\"round\"/><line x1=\"951\" y1=\"580\" x2=\"967\" y2=\"607\" stroke=\"#FFC078\" stroke-width=\"10\" stroke-linecap=\"round\"/><line x1=\"905\" y1=\"592\" x2=\"905\" y2=\"624\" stroke=\"#FFC078\" stroke-width=\"10\" stroke-linecap=\"round\"/><line x1=\"859\" y1=\"580\" x2=\"843\" y2=\"607\" stroke=\"#FFC078\" stroke-width=\"10\" stroke-linecap=\"round\"/><line x1=\"825\" y1=\"546\" x2=\"798\" y2=\"562\" stroke=\"#FFC078\" stroke-width=\"10\" stroke-linecap=\"round\"/><line x1=\"813\" y1=\"500\" x2=\"781\" y2=\"500\" stroke=\"#FFC078\" stroke-width=\"10\" stroke-linecap=\"round\"/><line x1=\"825\" y1=\"454\" x2=\"798\" y2=\"438\" stroke=\"#FFC078\" stroke-width=\"10\" stroke-linecap=\"round\"/><line x1=\"859\" y1=\"420\" x2=\"843\" y2=\"393\" stroke=\"#FFC078\" stroke-width=\"10\" stroke-linecap=\"round\"/><line x1=\"905\" y1=\"408\" x2=\"905\" y2=\"376\" stroke=\"#FFC078\" stroke-width=\"10\" stroke-linecap=\"round\"/><line x1=\"951\" y1=\"420\" x2=\"967\" y2=\"393\" stroke=\"#FFC078\" stroke-width=\"10\" stroke-linecap=\"round\"/><line x1=\"985\" y1=\"454\" x2=\"1012\" y2=\"438\" stroke=\"#FFC078\" stroke-width=\"10\" stroke-linecap=\"round\"/><circle cx=\"905\" cy=\"500\" r=\"74\" fill=\"#FFD43B\" stroke=\"#FAB005\" stroke-width=\"5\"/></g>\n<g id=\"soil\"><rect x=\"-600\" y=\"1185\" width=\"2280\" height=\"1400\" fill=\"url(#soilg)\"/>\n<rect x=\"-600\" y=\"1179\" width=\"2280\" height=\"22\" fill=\"#8CC152\"/><ellipse cx=\"502\" cy=\"1564\" rx=\"8\" ry=\"9\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"27\" cy=\"1685\" rx=\"17\" ry=\"4\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"596\" cy=\"1792\" rx=\"6\" ry=\"6\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"752\" cy=\"1638\" rx=\"15\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"268\" cy=\"1319\" rx=\"12\" ry=\"10\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"634\" cy=\"1939\" rx=\"11\" ry=\"8\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"126\" cy=\"1487\" rx=\"14\" ry=\"8\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"459\" cy=\"1297\" rx=\"9\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"312\" cy=\"1972\" rx=\"8\" ry=\"9\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"935\" cy=\"1266\" rx=\"11\" ry=\"7\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"44\" cy=\"1612\" rx=\"17\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"641\" cy=\"1328\" rx=\"13\" ry=\"9\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"231\" cy=\"1223\" rx=\"7\" ry=\"7\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"38\" cy=\"1294\" rx=\"12\" ry=\"10\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"457\" cy=\"1587\" rx=\"14\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"623\" cy=\"1376\" rx=\"13\" ry=\"10\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"76\" cy=\"1734\" rx=\"13\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"299\" cy=\"2145\" rx=\"18\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"754\" cy=\"2104\" rx=\"9\" ry=\"8\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"65\" cy=\"1557\" rx=\"14\" ry=\"8\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"826\" cy=\"1296\" rx=\"10\" ry=\"9\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"628\" cy=\"1637\" rx=\"11\" ry=\"10\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"617\" cy=\"1232\" rx=\"16\" ry=\"6\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"471\" cy=\"1415\" rx=\"11\" ry=\"6\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"112\" cy=\"1804\" rx=\"7\" ry=\"9\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"46\" cy=\"1945\" rx=\"16\" ry=\"7\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"758\" cy=\"1447\" rx=\"15\" ry=\"7\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"260\" cy=\"2116\" rx=\"11\" ry=\"6\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"914\" cy=\"1560\" rx=\"14\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"897\" cy=\"1457\" rx=\"7\" ry=\"10\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"200\" cy=\"2100\" rx=\"18\" ry=\"8\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"32\" cy=\"1272\" rx=\"9\" ry=\"6\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"656\" cy=\"2119\" rx=\"10\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"604\" cy=\"1343\" rx=\"7\" ry=\"7\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"744\" cy=\"1276\" rx=\"11\" ry=\"8\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"815\" cy=\"1573\" rx=\"17\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"764\" cy=\"1937\" rx=\"17\" ry=\"7\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"123\" cy=\"1260\" rx=\"12\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"675\" cy=\"1294\" rx=\"15\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"34\" cy=\"1379\" rx=\"11\" ry=\"7\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"424\" cy=\"1377\" rx=\"12\" ry=\"10\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"577\" cy=\"2095\" rx=\"6\" ry=\"10\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"945\" cy=\"1724\" rx=\"12\" ry=\"7\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"966\" cy=\"1276\" rx=\"14\" ry=\"7\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"332\" cy=\"1893\" rx=\"15\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"748\" cy=\"1639\" rx=\"12\" ry=\"8\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"75\" cy=\"1779\" rx=\"10\" ry=\"9\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"260\" cy=\"1985\" rx=\"15\" ry=\"8\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"931\" cy=\"1249\" rx=\"13\" ry=\"8\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"725\" cy=\"1595\" rx=\"7\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"652\" cy=\"1385\" rx=\"7\" ry=\"6\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"509\" cy=\"1716\" rx=\"6\" ry=\"9\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"367\" cy=\"1947\" rx=\"6\" ry=\"10\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"634\" cy=\"2128\" rx=\"18\" ry=\"9\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"130\" cy=\"1541\" rx=\"9\" ry=\"9\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"220\" cy=\"1422\" rx=\"7\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"996\" cy=\"2128\" rx=\"10\" ry=\"8\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"506\" cy=\"1703\" rx=\"10\" ry=\"8\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"266\" cy=\"1455\" rx=\"12\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/><ellipse cx=\"477\" cy=\"2098\" rx=\"6\" ry=\"5\" fill=\"#A9805A\" opacity=\"0.35\"/></g>\n<g id=\"soil-water\"><path d=\"M287 1292 C 296 1303, 296 1315, 287 1315 C 278 1315, 278 1303, 287 1292 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M209 1268 C 218 1280, 218 1292, 209 1292 C 200 1292, 200 1280, 209 1268 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M941 1735 C 952 1749, 952 1763, 941 1763 C 930 1763, 930 1749, 941 1735 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M273 1570 C 281 1581, 281 1592, 273 1592 C 265 1592, 265 1581, 273 1570 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M226 1295 C 234 1306, 234 1316, 226 1316 C 218 1316, 218 1306, 226 1295 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M950 1753 C 961 1767, 961 1782, 950 1782 C 939 1782, 939 1767, 950 1753 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M828 1350 C 837 1361, 837 1372, 828 1372 C 820 1372, 820 1361, 828 1350 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M662 1690 C 673 1705, 673 1720, 662 1720 C 651 1720, 651 1705, 662 1690 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M905 1279 C 915 1292, 915 1306, 905 1306 C 895 1306, 895 1292, 905 1279 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M705 1551 C 713 1561, 713 1572, 705 1572 C 697 1572, 697 1561, 705 1551 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M957 1778 C 967 1791, 967 1804, 957 1804 C 947 1804, 947 1791, 957 1778 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M348 1806 C 358 1819, 358 1832, 348 1832 C 338 1832, 338 1819, 348 1806 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M907 1767 C 917 1780, 917 1792, 907 1792 C 897 1792, 897 1780, 907 1767 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M457 1609 C 467 1621, 467 1632, 457 1632 C 448 1632, 448 1621, 457 1609 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M215 1418 C 226 1432, 226 1446, 215 1446 C 204 1446, 204 1432, 215 1418 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M102 1253 C 112 1267, 112 1280, 102 1280 C 91 1280, 91 1267, 102 1253 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M329 1567 C 339 1579, 339 1592, 329 1592 C 320 1592, 320 1579, 329 1567 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M389 1865 C 397 1876, 397 1886, 389 1886 C 381 1886, 381 1876, 389 1865 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M456 1353 C 466 1367, 466 1380, 456 1380 C 446 1380, 446 1367, 456 1353 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M325 1451 C 336 1465, 336 1478, 325 1478 C 315 1478, 315 1465, 325 1451 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M368 1579 C 379 1594, 379 1609, 368 1609 C 356 1609, 356 1594, 368 1579 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M157 1266 C 165 1277, 165 1288, 157 1288 C 149 1288, 149 1277, 157 1266 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M795 1621 C 803 1631, 803 1642, 795 1642 C 786 1642, 786 1631, 795 1621 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M378 1339 C 387 1351, 387 1363, 378 1363 C 369 1363, 369 1351, 378 1339 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M101 1668 C 113 1683, 113 1698, 101 1698 C 90 1698, 90 1683, 101 1668 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M977 1691 C 988 1707, 988 1722, 977 1722 C 965 1722, 965 1707, 977 1691 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M77 1406 C 89 1421, 89 1437, 77 1437 C 66 1437, 66 1421, 77 1406 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M804 1484 C 816 1499, 816 1514, 804 1514 C 793 1514, 793 1499, 804 1484 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M656 1750 C 664 1761, 664 1772, 656 1772 C 647 1772, 647 1761, 656 1750 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M244 1512 C 251 1522, 251 1532, 244 1532 C 236 1532, 236 1522, 244 1512 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M426 1842 C 435 1853, 435 1864, 426 1864 C 418 1864, 418 1853, 426 1842 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M69 1256 C 77 1266, 77 1277, 69 1277 C 61 1277, 61 1266, 69 1256 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M812 1459 C 821 1470, 821 1481, 812 1481 C 804 1481, 804 1470, 812 1459 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M153 1854 C 162 1866, 162 1877, 153 1877 C 144 1877, 144 1866, 153 1854 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M260 1266 C 267 1276, 267 1285, 260 1285 C 252 1285, 252 1276, 260 1266 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M222 1661 C 230 1671, 230 1681, 222 1681 C 214 1681, 214 1671, 222 1661 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M99 1541 C 108 1552, 108 1562, 99 1562 C 91 1562, 91 1552, 99 1541 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M1018 1303 C 1027 1315, 1027 1328, 1018 1328 C 1008 1328, 1008 1315, 1018 1303 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M803 1483 C 815 1498, 815 1514, 803 1514 C 791 1514, 791 1498, 803 1483 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M454 1249 C 463 1261, 463 1273, 454 1273 C 445 1273, 445 1261, 454 1249 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M299 1791 C 310 1806, 310 1820, 299 1820 C 287 1820, 287 1806, 299 1791 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M304 1382 C 312 1393, 312 1403, 304 1403 C 296 1403, 296 1393, 304 1382 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/><path d=\"M282 1784 C 290 1794, 290 1804, 282 1804 C 274 1804, 274 1794, 282 1784 Z\" fill=\"#74C0FC\" opacity=\"0.85\"/></g>\n<g id=\"roots\"><path d=\"M540 1185 C 546 1320, 530 1460, 540 1660\" fill=\"none\" stroke=\"#B48A5A\" stroke-width=\"37\" stroke-linecap=\"round\"/><path d=\"M538 1255 C 480 1290, 400 1330, 290 1430\" fill=\"none\" stroke=\"#B48A5A\" stroke-width=\"25\" stroke-linecap=\"round\"/><path d=\"M542 1300 C 610 1340, 700 1370, 800 1470\" fill=\"none\" stroke=\"#B48A5A\" stroke-width=\"25\" stroke-linecap=\"round\"/><path d=\"M536 1420 C 480 1470, 420 1520, 350 1620\" fill=\"none\" stroke=\"#B48A5A\" stroke-width=\"25\" stroke-linecap=\"round\"/><path d=\"M544 1500 C 590 1550, 650 1600, 720 1700\" fill=\"none\" stroke=\"#B48A5A\" stroke-width=\"25\" stroke-linecap=\"round\"/><path d=\"M540 1185 C 546 1320, 530 1460, 540 1660\" fill=\"none\" stroke=\"#F1DDBA\" stroke-width=\"30\" stroke-linecap=\"round\"/><path d=\"M538 1255 C 480 1290, 400 1330, 290 1430\" fill=\"none\" stroke=\"#F1DDBA\" stroke-width=\"18\" stroke-linecap=\"round\"/><path d=\"M542 1300 C 610 1340, 700 1370, 800 1470\" fill=\"none\" stroke=\"#F1DDBA\" stroke-width=\"18\" stroke-linecap=\"round\"/><path d=\"M536 1420 C 480 1470, 420 1520, 350 1620\" fill=\"none\" stroke=\"#F1DDBA\" stroke-width=\"18\" stroke-linecap=\"round\"/><path d=\"M544 1500 C 590 1550, 650 1600, 720 1700\" fill=\"none\" stroke=\"#F1DDBA\" stroke-width=\"18\" stroke-linecap=\"round\"/></g>\n<g id=\"root-hairs\"><line x1=\"505.4\" y1=\"1262.6\" x2=\"482.5\" y2=\"1235.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"515.4\" y1=\"1279.9\" x2=\"527.9\" y2=\"1313.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"495.5\" y1=\"1268.4\" x2=\"476.7\" y2=\"1248.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"505.5\" y1=\"1285.7\" x2=\"514.0\" y2=\"1312.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"485.2\" y1=\"1274.4\" x2=\"464.8\" y2=\"1251.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"495.3\" y1=\"1291.7\" x2=\"505.4\" y2=\"1320.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"474.5\" y1=\"1280.8\" x2=\"452.4\" y2=\"1255.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"484.8\" y1=\"1297.9\" x2=\"496.5\" y2=\"1329.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"463.5\" y1=\"1287.4\" x2=\"439.6\" y2=\"1259.8\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"473.9\" y1=\"1304.5\" x2=\"487.5\" y2=\"1338.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"452.0\" y1=\"1294.4\" x2=\"432.2\" y2=\"1273.8\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"462.6\" y1=\"1311.4\" x2=\"472.3\" y2=\"1338.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"440.2\" y1=\"1301.9\" x2=\"418.5\" y2=\"1279.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"451.0\" y1=\"1318.7\" x2=\"462.6\" y2=\"1348.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"428.0\" y1=\"1309.8\" x2=\"404.4\" y2=\"1284.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"439.0\" y1=\"1326.5\" x2=\"452.6\" y2=\"1358.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"415.4\" y1=\"1318.2\" x2=\"395.9\" y2=\"1300.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"426.6\" y1=\"1334.7\" x2=\"436.2\" y2=\"1359.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"402.4\" y1=\"1327.1\" x2=\"380.9\" y2=\"1306.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"413.8\" y1=\"1343.5\" x2=\"425.5\" y2=\"1370.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"389.0\" y1=\"1336.6\" x2=\"365.4\" y2=\"1314.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"400.7\" y1=\"1352.8\" x2=\"414.5\" y2=\"1382.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"375.1\" y1=\"1346.7\" x2=\"349.4\" y2=\"1322.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"387.1\" y1=\"1362.7\" x2=\"403.2\" y2=\"1394.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"360.9\" y1=\"1357.5\" x2=\"339.7\" y2=\"1339.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"373.1\" y1=\"1373.3\" x2=\"384.8\" y2=\"1398.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"346.2\" y1=\"1368.9\" x2=\"322.9\" y2=\"1349.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"358.7\" y1=\"1384.6\" x2=\"372.7\" y2=\"1411.8\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"331.1\" y1=\"1381.1\" x2=\"305.5\" y2=\"1359.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"343.9\" y1=\"1396.6\" x2=\"360.2\" y2=\"1425.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"315.6\" y1=\"1394.1\" x2=\"287.7\" y2=\"1370.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"328.6\" y1=\"1409.4\" x2=\"347.3\" y2=\"1440.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"299.7\" y1=\"1407.9\" x2=\"276.7\" y2=\"1390.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"312.9\" y1=\"1423.0\" x2=\"326.9\" y2=\"1447.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"569.4\" y1=\"1326.5\" x2=\"558.5\" y2=\"1360.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"578.7\" y1=\"1308.7\" x2=\"600.2\" y2=\"1280.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"580.8\" y1=\"1332.3\" x2=\"573.8\" y2=\"1359.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"589.9\" y1=\"1314.5\" x2=\"607.6\" y2=\"1293.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"592.4\" y1=\"1338.3\" x2=\"584.1\" y2=\"1367.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"601.5\" y1=\"1320.5\" x2=\"620.5\" y2=\"1296.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"604.2\" y1=\"1344.4\" x2=\"594.5\" y2=\"1376.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"613.4\" y1=\"1326.6\" x2=\"633.8\" y2=\"1300.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"616.3\" y1=\"1350.6\" x2=\"605.0\" y2=\"1385.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"625.6\" y1=\"1332.9\" x2=\"647.6\" y2=\"1303.8\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"628.7\" y1=\"1357.1\" x2=\"620.7\" y2=\"1384.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"638.1\" y1=\"1339.5\" x2=\"656.6\" y2=\"1317.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"641.2\" y1=\"1364.0\" x2=\"631.5\" y2=\"1394.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"650.9\" y1=\"1346.5\" x2=\"671.2\" y2=\"1322.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"654.0\" y1=\"1371.2\" x2=\"642.3\" y2=\"1403.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"664.0\" y1=\"1353.8\" x2=\"686.1\" y2=\"1327.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"667.0\" y1=\"1378.8\" x2=\"658.8\" y2=\"1404.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"677.3\" y1=\"1361.7\" x2=\"695.9\" y2=\"1342.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"680.2\" y1=\"1386.9\" x2=\"669.8\" y2=\"1414.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"690.9\" y1=\"1370.0\" x2=\"711.4\" y2=\"1348.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"693.7\" y1=\"1395.6\" x2=\"680.9\" y2=\"1425.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"704.7\" y1=\"1379.0\" x2=\"727.4\" y2=\"1355.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"707.3\" y1=\"1404.9\" x2=\"692.1\" y2=\"1437.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"718.8\" y1=\"1388.6\" x2=\"743.8\" y2=\"1363.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"721.1\" y1=\"1414.9\" x2=\"709.8\" y2=\"1440.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"733.0\" y1=\"1398.8\" x2=\"753.9\" y2=\"1380.8\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"735.1\" y1=\"1425.6\" x2=\"721.3\" y2=\"1452.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"747.5\" y1=\"1409.9\" x2=\"770.8\" y2=\"1390.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"749.3\" y1=\"1437.1\" x2=\"732.7\" y2=\"1466.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"762.1\" y1=\"1421.8\" x2=\"787.9\" y2=\"1400.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"763.7\" y1=\"1449.5\" x2=\"744.3\" y2=\"1480.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"776.9\" y1=\"1434.5\" x2=\"805.3\" y2=\"1411.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"778.2\" y1=\"1462.8\" x2=\"763.4\" y2=\"1487.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"791.9\" y1=\"1448.2\" x2=\"815.5\" y2=\"1432.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"503.9\" y1=\"1435.2\" x2=\"476.1\" y2=\"1413.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"517.2\" y1=\"1450.1\" x2=\"536.0\" y2=\"1480.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"495.2\" y1=\"1443.0\" x2=\"472.7\" y2=\"1426.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"508.6\" y1=\"1457.8\" x2=\"522.1\" y2=\"1481.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"486.4\" y1=\"1450.9\" x2=\"461.8\" y2=\"1432.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"499.9\" y1=\"1465.7\" x2=\"515.6\" y2=\"1491.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"477.6\" y1=\"1459.0\" x2=\"450.8\" y2=\"1438.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"491.1\" y1=\"1473.7\" x2=\"509.1\" y2=\"1502.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"468.6\" y1=\"1467.4\" x2=\"439.6\" y2=\"1445.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"482.3\" y1=\"1481.9\" x2=\"502.7\" y2=\"1512.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"459.6\" y1=\"1476.0\" x2=\"435.8\" y2=\"1460.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"473.4\" y1=\"1490.4\" x2=\"488.6\" y2=\"1514.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"450.4\" y1=\"1484.9\" x2=\"424.3\" y2=\"1467.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"464.5\" y1=\"1499.2\" x2=\"482.0\" y2=\"1525.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"441.1\" y1=\"1494.2\" x2=\"412.7\" y2=\"1474.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"455.4\" y1=\"1508.3\" x2=\"475.4\" y2=\"1536.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"431.7\" y1=\"1503.9\" x2=\"408.8\" y2=\"1490.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"446.2\" y1=\"1517.7\" x2=\"460.9\" y2=\"1540.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"422.2\" y1=\"1514.0\" x2=\"396.9\" y2=\"1498.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"436.9\" y1=\"1527.6\" x2=\"454.1\" y2=\"1551.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"412.6\" y1=\"1524.6\" x2=\"384.8\" y2=\"1507.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"427.5\" y1=\"1537.9\" x2=\"447.4\" y2=\"1563.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"402.9\" y1=\"1535.6\" x2=\"372.5\" y2=\"1517.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"418.0\" y1=\"1548.7\" x2=\"440.5\" y2=\"1576.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"393.0\" y1=\"1547.2\" x2=\"368.5\" y2=\"1534.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"408.4\" y1=\"1560.0\" x2=\"425.2\" y2=\"1581.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"383.1\" y1=\"1559.3\" x2=\"356.0\" y2=\"1545.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"398.6\" y1=\"1571.9\" x2=\"418.2\" y2=\"1595.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"373.0\" y1=\"1572.1\" x2=\"343.2\" y2=\"1556.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"388.7\" y1=\"1584.4\" x2=\"411.1\" y2=\"1609.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"362.7\" y1=\"1585.4\" x2=\"330.3\" y2=\"1568.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"378.7\" y1=\"1597.5\" x2=\"403.9\" y2=\"1623.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"352.3\" y1=\"1599.5\" x2=\"326.1\" y2=\"1587.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"368.5\" y1=\"1611.2\" x2=\"387.7\" y2=\"1632.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"558.5\" y1=\"1529.7\" x2=\"537.7\" y2=\"1558.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"572.8\" y1=\"1515.7\" x2=\"602.0\" y2=\"1495.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"566.1\" y1=\"1537.4\" x2=\"551.2\" y2=\"1560.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"580.4\" y1=\"1523.4\" x2=\"603.8\" y2=\"1508.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"574.0\" y1=\"1545.3\" x2=\"556.9\" y2=\"1570.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"588.2\" y1=\"1531.2\" x2=\"613.7\" y2=\"1514.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"582.0\" y1=\"1553.4\" x2=\"562.8\" y2=\"1580.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"596.2\" y1=\"1539.3\" x2=\"623.8\" y2=\"1520.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"590.2\" y1=\"1561.7\" x2=\"568.7\" y2=\"1591.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"604.4\" y1=\"1547.6\" x2=\"634.3\" y2=\"1526.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"598.5\" y1=\"1570.2\" x2=\"582.6\" y2=\"1594.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"612.8\" y1=\"1556.2\" x2=\"637.1\" y2=\"1541.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"607.0\" y1=\"1579.0\" x2=\"588.8\" y2=\"1604.8\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"621.5\" y1=\"1565.1\" x2=\"648.0\" y2=\"1548.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"615.7\" y1=\"1588.1\" x2=\"595.1\" y2=\"1615.8\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"630.3\" y1=\"1574.4\" x2=\"659.1\" y2=\"1555.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"624.6\" y1=\"1597.6\" x2=\"609.6\" y2=\"1619.7\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"639.3\" y1=\"1584.0\" x2=\"662.5\" y2=\"1570.8\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"633.6\" y1=\"1607.5\" x2=\"616.1\" y2=\"1631.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"648.5\" y1=\"1594.1\" x2=\"674.0\" y2=\"1579.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"642.8\" y1=\"1617.8\" x2=\"622.8\" y2=\"1643.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"657.9\" y1=\"1604.6\" x2=\"685.9\" y2=\"1588.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"652.2\" y1=\"1628.6\" x2=\"629.5\" y2=\"1655.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"667.4\" y1=\"1615.7\" x2=\"697.9\" y2=\"1597.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"661.7\" y1=\"1640.0\" x2=\"644.8\" y2=\"1661.8\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"677.1\" y1=\"1627.2\" x2=\"701.8\" y2=\"1614.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"671.4\" y1=\"1651.9\" x2=\"651.8\" y2=\"1675.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"687.0\" y1=\"1639.3\" x2=\"714.2\" y2=\"1625.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"681.3\" y1=\"1664.3\" x2=\"658.9\" y2=\"1689.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"697.1\" y1=\"1652.1\" x2=\"726.8\" y2=\"1636.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"691.3\" y1=\"1677.5\" x2=\"666.1\" y2=\"1703.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"707.3\" y1=\"1665.4\" x2=\"739.7\" y2=\"1648.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"701.5\" y1=\"1691.2\" x2=\"682.3\" y2=\"1712.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"717.7\" y1=\"1679.5\" x2=\"743.9\" y2=\"1667.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"531.4\" y1=\"1246.3\" x2=\"496.4\" y2=\"1252.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"551.4\" y1=\"1246.2\" x2=\"586.4\" y2=\"1252.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"531.3\" y1=\"1267.0\" x2=\"504.3\" y2=\"1272.8\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"551.3\" y1=\"1267.1\" x2=\"578.3\" y2=\"1273.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"531.1\" y1=\"1287.9\" x2=\"501.0\" y2=\"1293.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"551.1\" y1=\"1288.2\" x2=\"581.0\" y2=\"1294.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"530.8\" y1=\"1309.1\" x2=\"497.6\" y2=\"1314.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"550.8\" y1=\"1309.5\" x2=\"583.6\" y2=\"1316.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"530.3\" y1=\"1330.7\" x2=\"494.1\" y2=\"1335.8\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"550.3\" y1=\"1331.2\" x2=\"586.1\" y2=\"1338.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"529.7\" y1=\"1352.7\" x2=\"501.6\" y2=\"1357.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"549.7\" y1=\"1353.2\" x2=\"577.5\" y2=\"1359.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"529.1\" y1=\"1375.0\" x2=\"498.0\" y2=\"1380.2\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"549.1\" y1=\"1375.6\" x2=\"579.9\" y2=\"1382.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"528.5\" y1=\"1397.9\" x2=\"494.4\" y2=\"1403.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"548.5\" y1=\"1398.4\" x2=\"582.3\" y2=\"1405.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"527.9\" y1=\"1421.2\" x2=\"501.8\" y2=\"1426.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"547.9\" y1=\"1421.7\" x2=\"573.8\" y2=\"1428.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"527.4\" y1=\"1445.1\" x2=\"498.3\" y2=\"1450.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"547.4\" y1=\"1445.5\" x2=\"576.3\" y2=\"1452.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"527.0\" y1=\"1469.6\" x2=\"494.9\" y2=\"1475.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"547.0\" y1=\"1469.8\" x2=\"578.9\" y2=\"1476.3\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"526.7\" y1=\"1494.6\" x2=\"491.7\" y2=\"1500.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"546.7\" y1=\"1494.8\" x2=\"581.7\" y2=\"1501.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"526.6\" y1=\"1520.4\" x2=\"499.6\" y2=\"1526.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"546.6\" y1=\"1520.4\" x2=\"573.6\" y2=\"1526.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"526.7\" y1=\"1546.8\" x2=\"496.8\" y2=\"1553.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"546.7\" y1=\"1546.7\" x2=\"576.8\" y2=\"1552.4\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"527.1\" y1=\"1574.0\" x2=\"494.2\" y2=\"1580.6\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"547.1\" y1=\"1573.7\" x2=\"580.2\" y2=\"1579.1\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"527.7\" y1=\"1602.0\" x2=\"491.9\" y2=\"1609.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"547.7\" y1=\"1601.5\" x2=\"583.9\" y2=\"1606.5\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"528.7\" y1=\"1630.8\" x2=\"501.0\" y2=\"1637.9\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"548.7\" y1=\"1630.1\" x2=\"576.9\" y2=\"1635.0\" stroke=\"#E3C79C\" stroke-width=\"3.5\" stroke-linecap=\"round\"/></g>\n<g id=\"stem\"><rect x=\"512\" y=\"600\" width=\"56\" height=\"591\" rx=\"26\" fill=\"#6DB54F\" stroke=\"#3E7B2B\" stroke-width=\"5\"/></g>\n<g id=\"stem-cut\"><rect x=\"520\" y=\"640\" width=\"40\" height=\"585\" rx=\"16\" fill=\"#B5E09F\"/>\n<rect x=\"523\" y=\"650\" width=\"13\" height=\"595\" rx=\"6\" fill=\"#E7F5FF\" stroke=\"#339AF0\" stroke-width=\"3\"/>\n<rect x=\"544\" y=\"650\" width=\"13\" height=\"595\" rx=\"6\" fill=\"#E7F5FF\" stroke=\"#339AF0\" stroke-width=\"3\"/></g>\n<g id=\"leaves\"><g id=\"leaf-l\"><path d=\"M540 905 C 496 825, 364 794, 285 820 C 333 888, 457 943, 540 905 Z\" fill=\"#7CC86A\" stroke=\"#3E7B2B\" stroke-width=\"5\" stroke-linejoin=\"round\"/><path d=\"M540 905 L305 827\" stroke=\"#4F9A3A\" stroke-width=\"5\" stroke-linecap=\"round\"/><path d=\"M464 880 L436 842\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M464 880 L419 893\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M412 862 L383 831\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M412 862 L370 870\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M362 846 L330 821\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M362 846 L321 847\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/></g><g id=\"leaf-r\"><path d=\"M540 790 C 625 828, 754 773, 805 705 C 724 679, 587 710, 540 790 Z\" fill=\"#7CC86A\" stroke=\"#3E7B2B\" stroke-width=\"5\" stroke-linejoin=\"round\"/><path d=\"M540 790 L784 712\" stroke=\"#4F9A3A\" stroke-width=\"5\" stroke-linecap=\"round\"/><path d=\"M620 764 L665 779\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M620 764 L648 727\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M672 748 L716 755\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M672 748 L703 716\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M726 730 L767 732\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M726 730 L758 706\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/></g><g id=\"leaf-tl\"><path d=\"M540 700 C 530 650, 466 611, 420 610 C 434 654, 490 705, 540 700 Z\" fill=\"#7CC86A\" stroke=\"#3E7B2B\" stroke-width=\"5\" stroke-linejoin=\"round\"/><path d=\"M540 700 L430 617\" stroke=\"#4F9A3A\" stroke-width=\"5\" stroke-linecap=\"round\"/><path d=\"M504 673 L496 648\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M504 673 L478 672\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M480 655 L470 633\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M480 655 L456 651\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M456 637 L444 618\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M456 637 L435 630\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/></g><g id=\"leaf-tr\"><path d=\"M540 690 C 590 694, 643 644, 655 600 C 609 601, 548 641, 540 690 Z\" fill=\"#7CC86A\" stroke=\"#3E7B2B\" stroke-width=\"5\" stroke-linejoin=\"round\"/><path d=\"M540 690 L646 607\" stroke=\"#4F9A3A\" stroke-width=\"5\" stroke-linecap=\"round\"/><path d=\"M574 663 L600 662\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M574 663 L581 639\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M598 645 L621 641\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M598 645 L607 624\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M620 627 L641 620\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M620 627 L632 609\" stroke=\"#5EA94A\" stroke-width=\"3\" stroke-linecap=\"round\"/></g></g>\n<g id=\"leaf-veins\"><path d=\"M540 905 L305 827\" stroke=\"#339AF0\" stroke-width=\"6\" stroke-linecap=\"round\"/><path d=\"M464 880 L436 842\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M464 880 L419 893\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M412 862 L383 831\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M412 862 L370 870\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M362 846 L330 821\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M362 846 L321 847\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M540 790 L784 712\" stroke=\"#339AF0\" stroke-width=\"6\" stroke-linecap=\"round\"/><path d=\"M620 764 L665 779\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M620 764 L648 727\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M672 748 L716 755\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M672 748 L703 716\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M726 730 L767 732\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M726 730 L758 706\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M540 700 L430 617\" stroke=\"#339AF0\" stroke-width=\"6\" stroke-linecap=\"round\"/><path d=\"M504 673 L496 648\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M504 673 L478 672\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M480 655 L470 633\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M480 655 L456 651\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M456 637 L444 618\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M456 637 L435 630\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M540 690 L646 607\" stroke=\"#339AF0\" stroke-width=\"6\" stroke-linecap=\"round\"/><path d=\"M574 663 L600 662\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M574 663 L581 639\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M598 645 L621 641\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M598 645 L607 624\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M620 627 L641 620\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M620 627 L632 609\" stroke=\"#339AF0\" stroke-width=\"4\" stroke-linecap=\"round\"/></g>\n<g id=\"flower\"><ellipse cx=\"580\" cy=\"585\" rx=\"30\" ry=\"16\" transform=\"rotate(0 580 585)\" fill=\"#FFFFFF\" stroke=\"#DEE2E6\" stroke-width=\"3\"/><ellipse cx=\"572\" cy=\"609\" rx=\"30\" ry=\"16\" transform=\"rotate(36 572 609)\" fill=\"#FFFFFF\" stroke=\"#DEE2E6\" stroke-width=\"3\"/><ellipse cx=\"552\" cy=\"623\" rx=\"30\" ry=\"16\" transform=\"rotate(72 552 623)\" fill=\"#FFFFFF\" stroke=\"#DEE2E6\" stroke-width=\"3\"/><ellipse cx=\"528\" cy=\"623\" rx=\"30\" ry=\"16\" transform=\"rotate(108 528 623)\" fill=\"#FFFFFF\" stroke=\"#DEE2E6\" stroke-width=\"3\"/><ellipse cx=\"508\" cy=\"609\" rx=\"30\" ry=\"16\" transform=\"rotate(144 508 609)\" fill=\"#FFFFFF\" stroke=\"#DEE2E6\" stroke-width=\"3\"/><ellipse cx=\"500\" cy=\"585\" rx=\"30\" ry=\"16\" transform=\"rotate(180 500 585)\" fill=\"#FFFFFF\" stroke=\"#DEE2E6\" stroke-width=\"3\"/><ellipse cx=\"508\" cy=\"561\" rx=\"30\" ry=\"16\" transform=\"rotate(216 508 561)\" fill=\"#FFFFFF\" stroke=\"#DEE2E6\" stroke-width=\"3\"/><ellipse cx=\"528\" cy=\"547\" rx=\"30\" ry=\"16\" transform=\"rotate(252 528 547)\" fill=\"#FFFFFF\" stroke=\"#DEE2E6\" stroke-width=\"3\"/><ellipse cx=\"552\" cy=\"547\" rx=\"30\" ry=\"16\" transform=\"rotate(288 552 547)\" fill=\"#FFFFFF\" stroke=\"#DEE2E6\" stroke-width=\"3\"/><ellipse cx=\"572\" cy=\"561\" rx=\"30\" ry=\"16\" transform=\"rotate(324 572 561)\" fill=\"#FFFFFF\" stroke=\"#DEE2E6\" stroke-width=\"3\"/><circle cx=\"540\" cy=\"585\" r=\"27\" fill=\"#FFD43B\" stroke=\"#F59F00\" stroke-width=\"4\"/></g>\n<g id=\"flowlayer\"/>\n<g id=\"stoma\"><line x1=\"350\" y1=\"868\" x2=\"330\" y2=\"930\" stroke=\"#3E7B2B\" stroke-width=\"4\" stroke-dasharray=\"10 8\"/><circle cx=\"350\" cy=\"866\" r=\"9\" fill=\"#3E7B2B\"/><circle cx=\"330\" cy=\"1065\" r=\"135\" fill=\"#CDEBC2\" stroke=\"#3E7B2B\" stroke-width=\"6\"/><rect x=\"236\" y=\"961\" width=\"68\" height=\"48\" rx=\"16\" fill=\"#B7E0A8\" stroke=\"#8CC97A\" stroke-width=\"3\"/><rect x=\"356\" y=\"966\" width=\"68\" height=\"48\" rx=\"16\" fill=\"#B7E0A8\" stroke=\"#8CC97A\" stroke-width=\"3\"/><rect x=\"206\" y=\"1066\" width=\"68\" height=\"48\" rx=\"16\" fill=\"#B7E0A8\" stroke=\"#8CC97A\" stroke-width=\"3\"/><rect x=\"386\" y=\"1076\" width=\"68\" height=\"48\" rx=\"16\" fill=\"#B7E0A8\" stroke=\"#8CC97A\" stroke-width=\"3\"/><rect x=\"266\" y=\"1136\" width=\"68\" height=\"48\" rx=\"16\" fill=\"#B7E0A8\" stroke=\"#8CC97A\" stroke-width=\"3\"/><rect x=\"336\" y=\"1141\" width=\"68\" height=\"48\" rx=\"16\" fill=\"#B7E0A8\" stroke=\"#8CC97A\" stroke-width=\"3\"/><ellipse cx=\"306\" cy=\"1065\" rx=\"26\" ry=\"62\" fill=\"#5FAF4E\" stroke=\"#2F6B22\" stroke-width=\"4\"/><ellipse cx=\"354\" cy=\"1065\" rx=\"26\" ry=\"62\" fill=\"#5FAF4E\" stroke=\"#2F6B22\" stroke-width=\"4\"/><ellipse cx=\"330\" cy=\"1065\" rx=\"9\" ry=\"40\" fill=\"#24461C\"/></g>\n</svg>",
+ "steps": [
+  {
+   "title": "How does a plant drink water?",
+   "highlight": "drink water",
+   "beats": [
+    {
+     "say": "Plants get thirsty, just like you! But a plant has no mouth.",
+     "pause": 0.3,
+     "actions": [
+      {
+       "do": "pop",
+       "id": "flower",
+       "at": 0.2,
+       "origin": [
+        540,
+        585
+       ],
+       "dur": 0.6,
+       "sfx": "pop"
+      },
+      {
+       "do": "pulse",
+       "point": [
+        540,
+        585
+       ],
+       "r": 70,
+       "at": 2.6,
+       "color": "#F59F00"
+      }
+     ]
+    },
+    {
+     "say": "So how does it drink? Let's look under the ground!",
+     "pause": 0.2,
+     "actions": [
+      {
+       "do": "camera",
+       "box": [
+        250,
+        975,
+        590
+       ],
+       "word": "under",
+       "dur": 1.4
+      },
+      {
+       "do": "show",
+       "id": "soil-water",
+       "word": "ground",
+       "dur": 0.8
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "tag": "Step 1 / 4",
+   "title": "Roots soak up water",
+   "highlight": "water",
+   "beats": [
+    {
+     "say": "Here are the roots. They spread out under the soil, like long fingers.",
+     "actions": [
+      {
+       "do": "wipe",
+       "id": "roots",
+       "dir": "down",
+       "box": [
+        250,
+        1170,
+        600,
+        560
+       ],
+       "at": 0.1,
+       "dur": 2.4
+      },
+      {
+       "do": "label",
+       "id": "l-roots",
+       "text": "Roots",
+       "point": [
+        546,
+        1560
+       ],
+       "side": "right",
+       "len": 150,
+       "dy": 30,
+       "word": "roots"
+      }
+     ]
+    },
+    {
+     "say": "Every root is covered in tiny root hairs.",
+     "actions": [
+      {
+       "do": "wipe",
+       "id": "root-hairs",
+       "dir": "down",
+       "box": [
+        230,
+        1170,
+        640,
+        580
+       ],
+       "at": 0.3,
+       "dur": 1.8
+      },
+      {
+       "do": "label",
+       "id": "l-hairs",
+       "text": "Root hairs",
+       "point": [
+        372,
+        1356
+       ],
+       "side": "right",
+       "len": 110,
+       "dy": -120,
+       "word": "tiny"
+      }
+     ]
+    },
+    {
+     "say": "The root hairs soak up water from the soil, like a sponge.",
+     "pause": 0.5,
+     "actions": [
+      {
+       "do": "unlabel",
+       "id": "*",
+       "at": 0.0
+      },
+      {
+       "do": "flow",
+       "path": [
+        [
+         250,
+         1460
+        ],
+        [
+         290.0,
+         1430.0
+        ],
+        [
+         316.9,
+         1406.2
+        ],
+        [
+         342.5,
+         1384.7
+        ],
+        [
+         367.0,
+         1365.4
+        ],
+        [
+         390.3,
+         1348.0
+        ],
+        [
+         412.5,
+         1332.3
+        ],
+        [
+         433.5,
+         1318.1
+        ],
+        [
+         453.5,
+         1305.3
+        ],
+        [
+         472.4,
+         1293.7
+        ],
+        [
+         490.2,
+         1283.0
+        ],
+        [
+         507.1,
+         1273.2
+        ],
+        [
+         523.0,
+         1263.9
+        ],
+        [
+         538.0,
+         1255.0
+        ],
+        [
+         529,
+         1240
+        ],
+        [
+         529,
+         1190
+        ]
+       ],
+       "at": 0.4,
+       "dur": 30,
+       "speed": 2.6,
+       "count": 6,
+       "r": 10,
+       "color": "#339AF0",
+       "layer": "flowlayer"
+      },
+      {
+       "do": "flow",
+       "path": [
+        [
+         840,
+         1500
+        ],
+        [
+         800.0,
+         1470.0
+        ],
+        [
+         775.2,
+         1446.4
+        ],
+        [
+         750.9,
+         1425.5
+        ],
+        [
+         727.1,
+         1406.9
+        ],
+        [
+         703.8,
+         1390.4
+        ],
+        [
+         681.1,
+         1375.7
+        ],
+        [
+         659.0,
+         1362.5
+        ],
+        [
+         637.6,
+         1350.6
+        ],
+        [
+         616.9,
+         1339.6
+        ],
+        [
+         596.9,
+         1329.4
+        ],
+        [
+         577.8,
+         1319.5
+        ],
+        [
+         559.5,
+         1309.8
+        ],
+        [
+         542.0,
+         1300.0
+        ],
+        [
+         551,
+         1290
+        ],
+        [
+         551,
+         1190
+        ]
+       ],
+       "at": 0.9,
+       "dur": 30,
+       "speed": 2.6,
+       "count": 6,
+       "r": 10,
+       "color": "#339AF0",
+       "layer": "flowlayer"
+      },
+      {
+       "do": "flow",
+       "path": [
+        [
+         320,
+         1660
+        ],
+        [
+         350.0,
+         1620.0
+        ],
+        [
+         367.3,
+         1596.0
+        ],
+        [
+         384.2,
+         1573.9
+        ],
+        [
+         400.7,
+         1553.6
+        ],
+        [
+         416.9,
+         1534.8
+        ],
+        [
+         432.7,
+         1517.4
+        ],
+        [
+         448.2,
+         1501.2
+        ],
+        [
+         463.5,
+         1486.1
+        ],
+        [
+         478.4,
+         1471.9
+        ],
+        [
+         493.2,
+         1458.3
+        ],
+        [
+         507.6,
+         1445.2
+        ],
+        [
+         521.9,
+         1432.5
+        ],
+        [
+         536.0,
+         1420.0
+        ],
+        [
+         529,
+         1400
+        ],
+        [
+         529,
+         1190
+        ]
+       ],
+       "at": 1.3,
+       "dur": 30,
+       "speed": 2.8,
+       "count": 6,
+       "r": 10,
+       "color": "#339AF0",
+       "layer": "flowlayer"
+      },
+      {
+       "do": "pulse",
+       "point": [
+        300,
+        1425
+       ],
+       "r": 40,
+       "word": "sponge",
+       "color": "#339AF0"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "tag": "Step 2 / 4",
+   "title": "Up the stem",
+   "highlight": "stem",
+   "beats": [
+    {
+     "say": "Then the water travels up the stem, inside thin tubes.",
+     "actions": [
+      {
+       "do": "camera",
+       "box": [
+        250,
+        590,
+        580
+       ],
+       "at": 0.0,
+       "dur": 1.6
+      },
+      {
+       "do": "wipe",
+       "id": "stem-cut",
+       "dir": "up",
+       "box": [
+        500,
+        600,
+        80,
+        700
+       ],
+       "word": "inside",
+       "dur": 1.6
+      },
+      {
+       "do": "label",
+       "id": "l-tubes",
+       "text": "Tubes",
+       "point": [
+        560,
+        1000
+       ],
+       "side": "right",
+       "len": 120,
+       "word": "tubes"
+      }
+     ]
+    },
+    {
+     "say": "The tubes work like drinking straws. They carry water all the way to the top.",
+     "pause": 0.4,
+     "actions": [
+      {
+       "do": "flow",
+       "path": [
+        [
+         529,
+         1185
+        ],
+        [
+         529,
+         905
+        ],
+        [
+         412.5,
+         862.5
+        ],
+        [
+         310.5,
+         828.5
+        ]
+       ],
+       "at": 0.2,
+       "dur": 30,
+       "speed": 2.6,
+       "count": 7,
+       "r": 8,
+       "color": "#339AF0",
+       "layer": "flowlayer"
+      },
+      {
+       "do": "flow",
+       "path": [
+        [
+         551,
+         1185
+        ],
+        [
+         551,
+         790
+        ],
+        [
+         672.5,
+         747.5
+        ],
+        [
+         778.5,
+         713.5
+        ]
+       ],
+       "at": 0.6,
+       "dur": 30,
+       "speed": 2.6,
+       "count": 7,
+       "r": 8,
+       "color": "#339AF0",
+       "layer": "flowlayer"
+      },
+      {
+       "do": "unlabel",
+       "id": "l-tubes",
+       "word": "top"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "tag": "Step 3 / 4",
+   "title": "Into the leaves",
+   "highlight": "leaves",
+   "beats": [
+    {
+     "say": "The water spreads into every leaf, through little lines called veins.",
+     "actions": [
+      {
+       "do": "camera",
+       "box": [
+        110,
+        470,
+        660
+       ],
+       "at": 0.0,
+       "dur": 1.4
+      },
+      {
+       "do": "show",
+       "id": "leaf-veins",
+       "word": "little",
+       "dur": 0.8
+      },
+      {
+       "do": "label",
+       "id": "l-veins",
+       "text": "Veins",
+       "point": [
+        400,
+        852
+       ],
+       "side": "left",
+       "len": 60,
+       "dy": -120,
+       "word": "veins"
+      }
+     ]
+    },
+    {
+     "say": "Leaves use water, sunlight and air to make food for the plant.",
+     "pause": 0.4,
+     "actions": [
+      {
+       "do": "unlabel",
+       "id": "l-veins",
+       "at": 0
+      },
+      {
+       "do": "camera",
+       "box": null,
+       "at": 0.0,
+       "dur": 1.4
+      },
+      {
+       "do": "pop",
+       "id": "sun",
+       "word": "sunlight",
+       "origin": [
+        905,
+        500
+       ],
+       "dur": 0.7,
+       "sfx": "sparkle"
+      },
+      {
+       "do": "pulse",
+       "point": [
+        420,
+        860
+       ],
+       "r": 80,
+       "word": "food",
+       "color": "#2F9E44"
+      },
+      {
+       "do": "pulse",
+       "point": [
+        680,
+        745
+       ],
+       "r": 80,
+       "word": "food",
+       "color": "#2F9E44"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "tag": "Step 4 / 4",
+   "title": "Out through tiny holes",
+   "highlight": "tiny holes",
+   "beats": [
+    {
+     "say": "Leaves have tiny holes, too small to see. They are called stomata.",
+     "actions": [
+      {
+       "do": "camera",
+       "box": [
+        110,
+        470,
+        660
+       ],
+       "at": 0.0,
+       "dur": 1.4
+      },
+      {
+       "do": "pop",
+       "id": "stoma",
+       "word": "holes",
+       "origin": [
+        330,
+        1065
+       ],
+       "dur": 0.7,
+       "sfx": "pop"
+      },
+      {
+       "do": "label",
+       "id": "l-stoma",
+       "text": "Stomata",
+       "point": [
+        318,
+        1150
+       ],
+       "side": "left",
+       "len": 70,
+       "dy": 90,
+       "word": "stomata"
+      }
+     ]
+    },
+    {
+     "say": "The sun warms the leaf, and some water floats away as invisible vapour.",
+     "pause": 0.3,
+     "actions": [
+      {
+       "do": "flow",
+       "path": [
+        [
+         330,
+         1030
+        ],
+        [
+         310,
+         910
+        ],
+        [
+         340,
+         800
+        ]
+       ],
+       "at": 1.0,
+       "dur": 30,
+       "speed": 2.2,
+       "count": 4,
+       "r": 22,
+       "shape": "steam",
+       "color": "#A5D8FF"
+      },
+      {
+       "do": "flow",
+       "path": [
+        [
+         300,
+         800
+        ],
+        [
+         280,
+         680
+        ],
+        [
+         310,
+         570
+        ]
+       ],
+       "at": 1.6,
+       "dur": 30,
+       "speed": 2.2,
+       "count": 4,
+       "r": 16,
+       "shape": "steam",
+       "color": "#A5D8FF"
+      },
+      {
+       "do": "flow",
+       "path": [
+        [
+         700,
+         690
+        ],
+        [
+         680,
+         570
+        ],
+        [
+         710,
+         460
+        ]
+       ],
+       "at": 2.2,
+       "dur": 30,
+       "speed": 2.2,
+       "count": 4,
+       "r": 16,
+       "shape": "steam",
+       "color": "#A5D8FF"
+      }
+     ]
+    },
+    {
+     "say": "As water leaves the top, it pulls more water up from the roots, just like sipping through a straw!",
+     "pause": 0.5,
+     "actions": [
+      {
+       "do": "unlabel",
+       "id": "l-stoma",
+       "at": 0
+      },
+      {
+       "do": "hide",
+       "id": "stoma",
+       "at": 0.2,
+       "dur": 0.5
+      },
+      {
+       "do": "camera",
+       "box": null,
+       "at": 0.3,
+       "dur": 1.6
+      },
+      {
+       "do": "flow",
+       "path": [
+        [
+         250,
+         1460
+        ],
+        [
+         290.0,
+         1430.0
+        ],
+        [
+         316.9,
+         1406.2
+        ],
+        [
+         342.5,
+         1384.7
+        ],
+        [
+         367.0,
+         1365.4
+        ],
+        [
+         390.3,
+         1348.0
+        ],
+        [
+         412.5,
+         1332.3
+        ],
+        [
+         433.5,
+         1318.1
+        ],
+        [
+         453.5,
+         1305.3
+        ],
+        [
+         472.4,
+         1293.7
+        ],
+        [
+         490.2,
+         1283.0
+        ],
+        [
+         507.1,
+         1273.2
+        ],
+        [
+         523.0,
+         1263.9
+        ],
+        [
+         538.0,
+         1255.0
+        ],
+        [
+         529,
+         1240
+        ],
+        [
+         529,
+         905
+        ],
+        [
+         412.5,
+         862.5
+        ],
+        [
+         310.5,
+         828.5
+        ]
+       ],
+       "at": 1.0,
+       "dur": 30,
+       "speed": 4.2,
+       "count": 9,
+       "r": 9,
+       "color": "#339AF0",
+       "layer": "flowlayer"
+      },
+      {
+       "do": "flow",
+       "path": [
+        [
+         840,
+         1500
+        ],
+        [
+         800.0,
+         1470.0
+        ],
+        [
+         775.2,
+         1446.4
+        ],
+        [
+         750.9,
+         1425.5
+        ],
+        [
+         727.1,
+         1406.9
+        ],
+        [
+         703.8,
+         1390.4
+        ],
+        [
+         681.1,
+         1375.7
+        ],
+        [
+         659.0,
+         1362.5
+        ],
+        [
+         637.6,
+         1350.6
+        ],
+        [
+         616.9,
+         1339.6
+        ],
+        [
+         596.9,
+         1329.4
+        ],
+        [
+         577.8,
+         1319.5
+        ],
+        [
+         559.5,
+         1309.8
+        ],
+        [
+         542.0,
+         1300.0
+        ],
+        [
+         551,
+         1290
+        ],
+        [
+         551,
+         790
+        ],
+        [
+         672.5,
+         747.5
+        ],
+        [
+         778.5,
+         713.5
+        ]
+       ],
+       "at": 1.4,
+       "dur": 30,
+       "speed": 4.2,
+       "count": 9,
+       "r": 9,
+       "color": "#339AF0",
+       "layer": "flowlayer"
+      },
+      {
+       "do": "flow",
+       "path": [
+        [
+         320,
+         1660
+        ],
+        [
+         350.0,
+         1620.0
+        ],
+        [
+         367.3,
+         1596.0
+        ],
+        [
+         384.2,
+         1573.9
+        ],
+        [
+         400.7,
+         1553.6
+        ],
+        [
+         416.9,
+         1534.8
+        ],
+        [
+         432.7,
+         1517.4
+        ],
+        [
+         448.2,
+         1501.2
+        ],
+        [
+         463.5,
+         1486.1
+        ],
+        [
+         478.4,
+         1471.9
+        ],
+        [
+         493.2,
+         1458.3
+        ],
+        [
+         507.6,
+         1445.2
+        ],
+        [
+         521.9,
+         1432.5
+        ],
+        [
+         536.0,
+         1420.0
+        ],
+        [
+         529,
+         1400
+        ],
+        [
+         529,
+         700
+        ],
+        [
+         480.0,
+         655.0
+        ],
+        [
+         432.0,
+         619.0
+        ]
+       ],
+       "at": 1.8,
+       "dur": 30,
+       "speed": 4.6,
+       "count": 9,
+       "r": 9,
+       "color": "#339AF0",
+       "layer": "flowlayer"
+      },
+      {
+       "do": "flow",
+       "path": [
+        [
+         760,
+         1730
+        ],
+        [
+         720.0,
+         1700.0
+        ],
+        [
+         702.7,
+         1676.0
+        ],
+        [
+         685.9,
+         1653.9
+        ],
+        [
+         669.4,
+         1633.6
+        ],
+        [
+         653.5,
+         1614.8
+        ],
+        [
+         638.0,
+         1597.4
+        ],
+        [
+         623.0,
+         1581.2
+        ],
+        [
+         608.5,
+         1566.1
+        ],
+        [
+         594.5,
+         1551.9
+        ],
+        [
+         581.1,
+         1538.3
+        ],
+        [
+         568.1,
+         1525.2
+        ],
+        [
+         555.8,
+         1512.5
+        ],
+        [
+         544.0,
+         1500.0
+        ],
+        [
+         551,
+         1490
+        ],
+        [
+         551,
+         690
+        ],
+        [
+         597.5,
+         645.0
+        ],
+        [
+         643.5,
+         609.0
+        ]
+       ],
+       "at": 2.2,
+       "dur": 30,
+       "speed": 4.6,
+       "count": 9,
+       "r": 9,
+       "color": "#339AF0",
+       "layer": "flowlayer"
+      },
+      {
+       "do": "flow",
+       "path": [
+        [
+         260,
+         790
+        ],
+        [
+         240,
+         670
+        ],
+        [
+         270,
+         560
+        ]
+       ],
+       "at": 2.0,
+       "dur": 30,
+       "speed": 2.2,
+       "count": 4,
+       "r": 16,
+       "shape": "steam",
+       "color": "#A5D8FF"
+      },
+      {
+       "do": "flow",
+       "path": [
+        [
+         760,
+         680
+        ],
+        [
+         740,
+         560
+        ],
+        [
+         770,
+         450
+        ]
+       ],
+       "at": 2.6,
+       "dur": 30,
+       "speed": 2.2,
+       "count": 4,
+       "r": 16,
+       "shape": "steam",
+       "color": "#A5D8FF"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Roots, stem, leaves!",
+   "highlight": "",
+   "beats": [
+    {
+     "say": "So remember. Roots soak it up. The stem carries it. And leaves let it out.",
+     "pause": 0.4,
+     "actions": [
+      {
+       "do": "label",
+       "id": "r1",
+       "text": "Roots",
+       "point": [
+        380,
+        1340
+       ],
+       "side": "left",
+       "len": 90,
+       "word": "roots"
+      },
+      {
+       "do": "label",
+       "id": "r2",
+       "text": "Stem",
+       "point": [
+        568,
+        1000
+       ],
+       "side": "right",
+       "len": 120,
+       "word": "stem"
+      },
+      {
+       "do": "label",
+       "id": "r3",
+       "text": "Leaves",
+       "point": [
+        760,
+        720
+       ],
+       "side": "right",
+       "len": 60,
+       "dy": -90,
+       "word": "leaves"
+      }
+     ]
+    },
+    {
+     "say": "In the Quran, Allah tells us that He made every living thing from water.",
+     "caption": "Allah made every living thing from water. (Quran 21:30)",
+     "pause": 0.3,
+     "actions": [
+      {
+       "do": "unlabel",
+       "id": "*",
+       "at": 0
+      }
+     ]
+    },
+    {
+     "say": "So go and give a plant a drink today!",
+     "pause": 0.6,
+     "actions": [
+      {
+       "do": "pulse",
+       "point": [
+        540,
+        585
+       ],
+       "r": 80,
+       "at": 0.4,
+       "color": "#F59F00"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
