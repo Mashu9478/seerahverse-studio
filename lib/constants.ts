@@ -1,0 +1,107 @@
+export const VOICES = [
+  { id: "af_heart", name: "Heart", desc: "Warm, kind teacher", accent: "US", gender: "female", emoji: "💜" },
+  { id: "af_bella", name: "Bella", desc: "Bright & cheerful", accent: "US", gender: "female", emoji: "🌟" },
+  { id: "af_nicole", name: "Nicole", desc: "Soft & calm", accent: "US", gender: "female", emoji: "🌙" },
+  { id: "af_sky", name: "Sky", desc: "Young & lively", accent: "US", gender: "female", emoji: "☁️" },
+  { id: "am_michael", name: "Michael", desc: "Friendly big brother", accent: "US", gender: "male", emoji: "🧢" },
+  { id: "am_puck", name: "Puck", desc: "Playful & fun", accent: "US", gender: "male", emoji: "🎈" },
+  { id: "am_fenrir", name: "Fenrir", desc: "Deep storyteller", accent: "US", gender: "male", emoji: "🐺" },
+  { id: "bf_emma", name: "Emma", desc: "Gentle British", accent: "UK", gender: "female", emoji: "🌷" },
+  { id: "bm_george", name: "George", desc: "Clear British", accent: "UK", gender: "male", emoji: "🎩" },
+  { id: "bm_fable", name: "Fable", desc: "British storyteller", accent: "UK", gender: "male", emoji: "📖" },
+] as const;
+
+export type VoiceId = (typeof VOICES)[number]["id"];
+
+export const SUBJECTS = [
+  { id: "Math", emoji: "➕" },
+  { id: "Science", emoji: "🔬" },
+  { id: "English", emoji: "🔤" },
+  { id: "Islamic Studies", emoji: "🕌" },
+  { id: "Quran", emoji: "📖" },
+  { id: "Seerah", emoji: "🐪" },
+  { id: "General Knowledge", emoji: "🌍" },
+] as const;
+
+export const AGE_GROUPS = [
+  { id: "4-5", label: "4–5 yrs", emoji: "🧸" },
+  { id: "6-7", label: "6–7 yrs", emoji: "🎒" },
+  { id: "8-9", label: "8–9 yrs", emoji: "🚲" },
+  { id: "10-12", label: "10–12 yrs", emoji: "🔭" },
+] as const;
+
+export const SHORT_DURATIONS = [15, 30, 45, 60, 90, 120, 180] as const;
+
+export const PALETTES = [
+  { id: "bright", name: "Bright", colors: ["#FFF6C7", "#7B5CD6", "#FF8A1F", "#2DBE60"] },
+  { id: "pastel", name: "Pastel", colors: ["#F4EEFF", "#B9A3FB", "#FFC8DD", "#BDE0FE"] },
+  { id: "ocean", name: "Ocean", colors: ["#E2F8FF", "#2F7DF6", "#14B8A6", "#8FDDF7"] },
+  { id: "sunset", name: "Sunset", colors: ["#FFE2EE", "#FF8A1F", "#E64BA6", "#FFD2A6"] },
+  { id: "forest", name: "Forest", colors: ["#E6FAEA", "#2DBE60", "#8CCB6A", "#6B4226"] },
+  { id: "candy", name: "Candy", colors: ["#FFE6F3", "#E64BA6", "#8E5CF0", "#FFC21A"] },
+] as const;
+
+export const MUSIC = [
+  { id: "none", name: "No music", desc: "Voice + gentle sound effects. Suits many Muslim families.", emoji: "🤫" },
+  { id: "cheerful", name: "Cheerful", desc: "Soft, bouncy background tune", emoji: "🎶" },
+  { id: "calm", name: "Calm", desc: "Slow, peaceful background", emoji: "🌿" },
+] as const;
+
+export const AI_MODELS = [
+  { id: "anthropic/claude-sonnet-5.5", name: "Claude Sonnet 5.5", desc: "Fast & great quality (recommended)" },
+  { id: "anthropic/claude-opus-5.5", name: "Claude Opus 5.5", desc: "Best quality, slower, costs more" },
+] as const;
+
+export const SCENE_TYPES = [
+  { type: "title", name: "Title", emoji: "🎬", desc: "Big bouncy title with hero emojis" },
+  { type: "concept", name: "Concept", emoji: "💡", desc: "Explain an idea with points" },
+  { type: "objects", name: "Counting objects", emoji: "🍎", desc: "Groups of emoji to count" },
+  { type: "equation", name: "Equation", emoji: "🧮", desc: "Math problem, answer pops in" },
+  { type: "quiz", name: "Quiz", emoji: "❓", desc: "Question, countdown, reveal" },
+  { type: "steps", name: "Steps", emoji: "🪜", desc: "Numbered steps or a cycle" },
+  { type: "compare", name: "Compare", emoji: "⚖️", desc: "Two columns to sort things" },
+  { type: "story", name: "Story", emoji: "📚", desc: "Characters and props" },
+  { type: "fact", name: "Fun fact", emoji: "✨", desc: "Did-you-know card" },
+  { type: "islamic", name: "Islamic connection", emoji: "🕌", desc: "Ayah, hadith, Seerah or dua" },
+  { type: "recap", name: "Recap", emoji: "⭐", desc: "Star checklist summary" },
+  { type: "outro", name: "Outro", emoji: "👋", desc: "Goodbye + subscribe" },
+] as const;
+
+export type SceneTypeId = (typeof SCENE_TYPES)[number]["type"];
+
+export const TWEMOJI_CREDIT = "Emoji graphics: Twemoji by X Corp & contributors, CC-BY 4.0.";
+
+export const DEFAULT_APP_SETTINGS = {
+  channel: "SeerahVerse Academia",
+  tagline: "where knowledge meets leadership",
+  chip: "",
+  voice: "af_heart",
+  speed: 0.92,
+  music: "none",
+  sfx: true,
+  mascot: true,
+  captions: true,
+  palette: "bright",
+  format: "long",
+  long_minutes: 5,
+  short_seconds: 60,
+  age_group: "6-7",
+  greeting: true,
+  subscribe: true,
+  model: "anthropic/claude-sonnet-5.5",
+  max_parallel: 4,
+};
+
+export type AppSettings = typeof DEFAULT_APP_SETTINGS;
+
+export const STATUS_META: Record<string, { label: string; color: string; emoji: string }> = {
+  draft: { label: "Draft", color: "bg-slate-100 text-slate-700", emoji: "📝" },
+  scripting: { label: "Writing script", color: "bg-brand-100 text-brand-700", emoji: "✍️" },
+  review: { label: "Needs review", color: "bg-sun-soft text-amber-800", emoji: "👀" },
+  queued: { label: "Queued", color: "bg-sky-soft text-sky", emoji: "⏳" },
+  rendering: { label: "Rendering", color: "bg-orange-soft text-orange-700", emoji: "🎨" },
+  uploading: { label: "Uploading", color: "bg-sky-soft text-sky", emoji: "☁️" },
+  done: { label: "Done", color: "bg-leaf-soft text-green-800", emoji: "🎉" },
+  failed: { label: "Failed", color: "bg-red-100 text-red-700", emoji: "⚠️" },
+  canceled: { label: "Canceled", color: "bg-slate-100 text-slate-600", emoji: "🚫" },
+};

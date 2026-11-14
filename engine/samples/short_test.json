@@ -1,0 +1,21 @@
+{
+  "version": 1, "title": "Why Do Leaves Change Color?", "format": "short", "target_seconds": 45, "strict_length": true,
+  "voice": "am_michael", "speed": 0.95, "music": "calm", "sfx": true, "mascot": true, "captions": true, "age_group": "8-9",
+  "brand": {"channel": "SeerahVerse Academia", "tagline": "where knowledge meets leadership", "chip": "Science Shorts", "greeting": false, "subscribe": true},
+  "palette": "forest",
+  "scenes": [
+    {"type": "title", "title": "Why Do Leaves Change Color?", "subtitle": "The secret inside every leaf", "emojis": ["🍁", "🌳", "☀️"],
+     "beats": [{"say": "Why do leaves turn red and orange in autumn?"}, {"say": "Let's find out!"}]},
+    {"type": "concept", "heading": "Chlorophyll is green", "emoji": "🍃",
+     "points": [{"text": "Leaves make food from sunlight", "at": 0}, {"text": "Chlorophyll makes them green", "at": 1}, {"text": "In autumn it breaks down", "at": 2}],
+     "beats": [{"say": "Leaves make food from sunlight."}, {"say": "A green helper called chlorophyll does the work."}, {"say": "In autumn, days get shorter, and the chlorophyll breaks down."}]},
+    {"type": "steps", "heading": "Then colors appear", "steps": [{"emoji": "🟡", "text": "Yellow was hiding there all along", "at": 0}, {"emoji": "🔴", "text": "Red is made new in autumn", "at": 1}],
+     "beats": [{"say": "The yellow and orange colors were hiding in the leaf all along."}, {"say": "And red colors are made fresh in autumn!"}]},
+    {"type": "quiz", "question": "What makes leaves green?", "kind": "choice", "options": ["Chlorophyll", "Water", "Soil"], "correct": 0, "think_seconds": 3,
+     "beats": [{"say": "Quick quiz! What makes leaves green?"}, {"say": "Chlorophyll! Great job!"}]},
+    {"type": "objects", "heading": "Count the leaves", "groups": [{"emoji": "🍁", "count": 6, "at": 0}], "operator": null, "equation": {"text": "6 leaves", "at": 0, "word": "six"},
+     "beats": [{"say": "How many maple leaves? Six!"}]},
+    {"type": "outro", "title": "Subhan Allah!", "subtitle": "Allah made every season beautiful",
+     "beats": [{"say": "Subhan Allah! Follow for more fun science."}]}
+  ]
+}

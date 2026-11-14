@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background: #f7f4ff;
+  color: #2b2045;
+}
+
+body {
+  background-image:
+    radial-gradient(1200px 500px at 110% -10%, rgba(255, 194, 26, 0.12), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(47, 125, 246, 0.08), transparent 60%),
+    radial-gradient(800px 400px at 50% -20%, rgba(123, 92, 214, 0.1), transparent 60%);
+  background-attachment: fixed;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: Fredoka, ui-rounded, system-ui, sans-serif;
+}
+
+@layer components {
+  .card {
+    @apply rounded-3xl bg-white shadow-soft ring-1 ring-brand-100/70;
+  }
+  .input {
+    @apply w-full rounded-2xl border-2 border-brand-100 bg-white px-4 py-2.5 text-ink outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-bold text-brand-800;
+  }
+  .hint {
+    @apply mt-1 text-xs text-slate-500;
+  }
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #d4c6ff;
+  border-radius: 99px;
+}
+
+input[type="range"] {
+  accent-color: #7b5cd6;
+}
+
+:focus-visible {
+  outline: 3px solid #9c7ef0;
+  outline-offset: 2px;
+}
