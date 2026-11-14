@@ -7,9 +7,9 @@ export function Footer({ tagline }: { tagline?: string }) {
       <div className="divider absolute inset-x-0 top-0" />
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-12 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
         <div className="space-y-3">
-          <Logo sub="Academia" />
+          <Logo />
           <p className="max-w-sm text-sm text-fg-muted">
-            SeerahVerse Academia PVT. — {tagline || "where knowledge meets leadership"}
+            AI-made, animated learning videos for kids — by Hamas.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-fg-subtle">
@@ -20,7 +20,7 @@ export function Footer({ tagline }: { tagline?: string }) {
         </div>
       </div>
       <div className="border-t border-white/[0.05] py-5 text-center text-xs text-fg-subtle">
-        © {new Date().getFullYear()} SeerahVerse Academia. All rights reserved. · Emoji graphics: Twemoji, CC-BY 4.0
+        © {new Date().getFullYear()} AI_LEARNING_VIDEO_GENERATION_BY_HAMAS. All rights reserved. · Emoji graphics: Twemoji, CC-BY 4.0
       </div>
     </footer>
   );

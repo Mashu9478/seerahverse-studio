@@ -124,8 +124,7 @@ export default function Dashboard() {
             What shall we <span className="text-gradient">teach today?</span>
           </h1>
           <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-fg-muted">
-            Type a topic or drop textbook pages. Claude writes the lesson, your presenter brings it to life, and you get a ready-to-upload video for{" "}
-            <span className="font-semibold text-fg">{settings?.channel ?? "your channel"}</span>.
+            Type a topic or drop textbook pages. Claude writes the lesson, your presenter brings it to life, and you get a ready-to-upload video for your channel.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="/studio/create">

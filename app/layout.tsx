@@ -12,7 +12,7 @@ import "@fontsource/plus-jakarta-sans/700.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "SeerahVerse Academia — Learn with fun animated lessons", template: "%s · SeerahVerse" },
+  title: { default: "AI_LEARNING_VIDEO_GENERATION_BY_HAMAS", template: "%s · AI_LEARNING_VIDEO_GENERATION_BY_HAMAS" },
   description: "Create animated, narrated kids' learning videos for YouTube — Shorts and long videos, one or many at a time.",
   icons: { icon: "/icon.svg" },
 };

@@ -108,7 +108,7 @@ export default function AdminLoginPage() {
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" /> Restricted area
             </span>
             <h1 className="mt-4 text-2xl font-semibold tracking-tight text-fg sm:text-3xl">Admin access</h1>
-            <p className="mt-2 text-sm text-fg-muted">Sign in to create, review and publish SeerahVerse videos.</p>
+            <p className="mt-2 text-sm text-fg-muted">Sign in to create, review and publish your learning videos.</p>
           </div>
           <Suspense>
             <LoginForm />

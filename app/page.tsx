@@ -9,7 +9,7 @@ import { Footer } from "@/components/public/Footer";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "SeerahVerse Academia — Fun animated lessons for kids",
+  title: { absolute: "AI_LEARNING_VIDEO_GENERATION_BY_HAMAS — Fun animated lessons for kids" },
   description:
     "Animated, narrated lessons and Shorts for children: maths, science, Quran, Seerah and more — with friendly presenters, quizzes, captions and Islamic values.",
 };
@@ -22,7 +22,7 @@ async function load() {
     console.error("public page", e);
     return {
       videos: [] as PublicVideo[],
-      info: { channel: "SeerahVerse Academia", tagline: "where knowledge meets leadership", stats: { videos: 0, seconds: 0, shorts: 0, longs: 0 }, subjects: [] },
+      info: { channel: "", tagline: "", stats: { videos: 0, seconds: 0, shorts: 0, longs: 0 }, subjects: [] },
     };
   }
 }

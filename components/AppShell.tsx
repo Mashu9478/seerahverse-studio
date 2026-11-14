@@ -120,7 +120,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   const brand = (
     <Link href="/studio" className="mb-8 flex items-center px-2">
-      <Logo />
+      <Logo sub="BY_HAMAS · STUDIO" />
     </Link>
   );
 
@@ -164,7 +164,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
       <div className="fixed inset-x-0 top-0 z-40 flex items-center justify-between border-b border-white/[0.06] bg-bg/80 px-4 py-3 backdrop-blur-xl lg:hidden">
         <Link href="/studio">
-          <Logo />
+          <Logo sub="BY_HAMAS · STUDIO" />
         </Link>
         <button aria-label="Open menu" onClick={() => setOpen(true)} className="relative rounded-xl p-2 text-fg ring-1 ring-white/10 hover:bg-white/[0.06]">
           <Menu className="h-6 w-6" />

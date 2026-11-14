@@ -18,7 +18,7 @@ export function Features() {
           <h2 className="mt-4 text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
             Made by teachers, <span className="text-gradient">loved by kids</span>
           </h2>
-          <p className="mt-3 text-fg-muted">Every SeerahVerse lesson follows the same proven rhythm: hook, explain, practise, remember.</p>
+          <p className="mt-3 text-fg-muted">Every lesson follows the same proven rhythm: hook, explain, practise, remember.</p>
         </Reveal>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {FEATURES.map((f, i) => (

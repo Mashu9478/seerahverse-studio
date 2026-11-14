@@ -341,7 +341,7 @@ export default function SettingsPage() {
             <Section id="account" icon={<KeyRound className="h-5 w-5" />} title="Admin account" desc="Only you can open the studio; visitors only see the public site." tone="slate">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <p className="max-w-xl text-[13px] text-fg-muted">
-                  The admin password lives in <span className="font-semibold text-fg">Vercel → seerahverse-studio → Settings → Environment Variables → APP_PASSWORD</span>. Change it there and redeploy to update it.
+                  The admin password lives in <span className="font-semibold text-fg">Vercel → ai-vid-gen → Settings → Environment Variables → APP_PASSWORD</span>. Change it there and redeploy to update it.
                 </p>
                 <Button variant="danger" icon={<LogOut className="h-4 w-4" />} onClick={logout}>
                   Log out

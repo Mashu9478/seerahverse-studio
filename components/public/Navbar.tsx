@@ -32,8 +32,8 @@ export function Navbar() {
         )}
       >
         <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8" aria-label="Main">
-          <Link href="/" aria-label="SeerahVerse Academia home" className="rounded-xl">
-            <Logo sub="Academia" />
+          <Link href="/" aria-label="AI_LEARNING_VIDEO_GENERATION_BY_HAMAS home" className="rounded-xl">
+            <Logo />
           </Link>
           <div className="hidden items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.03] p-1 backdrop-blur md:flex">
             {LINKS.map((l) => (

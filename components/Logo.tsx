@@ -1,6 +1,7 @@
 import { cx } from "@/lib/cx";
+import { BRAND_MAIN, BRAND_SUB } from "@/lib/brand";
 
-/** SeerahVerse mark: an owl-eye monogram on a gradient tile. */
+/** Brand mark: an owl-eye monogram on a gradient tile. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={cx("shrink-0", className)} aria-hidden>
@@ -25,13 +26,13 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-export function Logo({ sub = "Video Studio", className }: { sub?: string; className?: string }) {
+export function Logo({ sub = BRAND_SUB, className }: { sub?: string; className?: string }) {
   return (
     <span className={cx("flex items-center gap-3", className)}>
       <LogoMark className="h-10 w-10 drop-shadow-[0_6px_18px_rgba(139,92,246,0.55)]" />
       <span className="leading-tight">
-        <span className="block font-display text-[17px] font-semibold text-fg" style={{ fontKerning: "none" }}>
-          SeerahVerse
+        <span className="block font-display text-[12.5px] font-semibold tracking-[0.04em] text-fg sm:text-[13px]">
+          {BRAND_MAIN}
         </span>
         <span className="block text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-300">{sub}</span>
       </span>
