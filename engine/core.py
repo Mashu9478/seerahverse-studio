@@ -204,6 +204,189 @@ def owl(eyes="open", beak=0, wave=False, scale=0.8):
     return P.done()
 
 
+
+# ------------------------------------------------------------------ presenter characters
+# All share the owl's 300x340 design box so placement code is identical.
+SKIN_LIGHT, SKIN_TAN = "#F2C9A0", "#D9A27A"
+
+
+def _face_features(P, cx, cy, eyes, mouth, ink="#2B2045", spread=28, eye_w=8, eye_h=11, mouth_y=34, mouth_w=16):
+    ink = hx(ink)
+    for sx in (-spread, spread):
+        x = cx + sx
+        if eyes == "open":
+            P.ellipse((x - eye_w, cy - eye_h, x + eye_w, cy + eye_h), fill=ink)
+            P.ellipse((x - eye_w * 0.2, cy - eye_h * 0.7, x + eye_w * 0.6, cy - eye_h * 0.1), fill=(255, 255, 255, 255))
+        else:
+            P.arc((x - eye_w * 1.4, cy - 6, x + eye_w * 1.4, cy + 10), 15, 165, ink, 5)
+    my = cy + mouth_y
+    if mouth == 0:
+        P.arc((cx - mouth_w, my - 12, cx + mouth_w, my + 8), 20, 160, ink, 5)
+    else:
+        h = 9 if mouth == 1 else 15
+        w = mouth_w * (0.75 if mouth == 1 else 0.95)
+        P.ellipse((cx - w, my - 4, cx + w, my + h), fill=hx("#7A1F2B"))
+        P.ellipse((cx - w * 0.6, my + h * 0.35, cx + w * 0.6, my + h + 1), fill=hx("#F87171"))
+
+
+def _arms(P, color, skin, wave, left_item=None):
+    c, s = hx(color), hx(skin)
+    # left arm (viewer's left)
+    P.line([(92, 232), (70, 292)], c, 28)
+    P.ellipse((56, 282, 84, 310), fill=s)
+    if left_item == "book":
+        P.rrect((40, 262, 92, 304), 6, fill=hx("#2F7DF6"))
+        P.rrect((45, 266, 88, 300), 4, fill=hx("#DBEAFE"))
+        P.line([(66, 266), (66, 300)], hx("#2F7DF6"), 3, caps=False)
+    if wave:
+        P.line([(208, 230), (250, 168)], c, 28)
+        P.ellipse((236, 140, 268, 172), fill=s)
+    else:
+        P.line([(208, 232), (230, 292)], c, 28)
+        P.ellipse((216, 282, 244, 310), fill=s)
+
+
+@lru_cache(maxsize=None)
+def maryam(eyes="open", mouth=0, wave=False, scale=0.8):
+    P = Pen(300, 340, scale)
+    hijab, hijab_dk, dress = hx("#8B5CF6"), hx("#6D28D9"), hx("#F472B6")
+    P.rrect((78, 205, 222, 336), 46, fill=dress)
+    P.rrect((118, 300, 182, 336), 10, fill=shade(dress, 0.85))
+    _arms(P, "#F472B6", SKIN_LIGHT, wave, left_item="book")
+    P.rrect((62, 150, 238, 262), 70, fill=hijab_dk)
+    P.ellipse((58, 32, 242, 244), fill=hijab)
+    P.ellipse((90, 74, 210, 206), fill=shade(hijab, 1.25))
+    P.ellipse((97, 82, 203, 200), fill=hx(SKIN_LIGHT))
+    P.ellipse((104, 156, 124, 170), fill=hx("#F4A3A6"))
+    P.ellipse((176, 156, 196, 170), fill=hx("#F4A3A6"))
+    P.arc((116, 116, 140, 128), 200, 340, hx("#5B3A29"), 3)
+    P.arc((160, 116, 184, 128), 200, 340, hx("#5B3A29"), 3)
+    _face_features(P, 150, 140, eyes, mouth, spread=22, eye_w=7, eye_h=10, mouth_y=32, mouth_w=14)
+    P.ellipse((180, 196, 196, 212), fill=hx("#FBBF24"))  # brooch pin
+    return P.done()
+
+
+@lru_cache(maxsize=None)
+def yusuf(eyes="open", mouth=0, wave=False, scale=0.8):
+    P = Pen(300, 340, scale)
+    kurta = hx("#38BDF8")
+    P.rrect((80, 200, 220, 336), 42, fill=kurta)
+    P.poly([(136, 200), (164, 200), (150, 236)], fill=shade(kurta, 0.8))
+    P.line([(150, 236), (150, 300)], shade(kurta, 0.8), 3, caps=False)
+    for y in (252, 272, 292):
+        P.ellipse((146, y - 4, 154, y + 4), fill=hx("#F8FAFC"))
+    _arms(P, "#38BDF8", SKIN_TAN, wave)
+    P.ellipse((84, 122, 106, 156), fill=hx(SKIN_TAN))
+    P.ellipse((194, 122, 216, 156), fill=hx(SKIN_TAN))
+    P.ellipse((92, 58, 208, 150), fill=hx("#2D1B12"))
+    P.ellipse((97, 78, 203, 200), fill=hx(SKIN_TAN))
+    P.ellipse((92, 34, 208, 104), fill=hx("#F8FAFC"))
+    P.rrect((92, 70, 208, 92), 8, fill=hx("#E2E8F0"))
+    for x in range(102, 204, 12):
+        P.ellipse((x - 2.5, 78, x + 2.5, 84), fill=hx("#94A3B8"))
+    P.ellipse((104, 154, 124, 168), fill=hx("#E0907C"))
+    P.ellipse((176, 154, 196, 168), fill=hx("#E0907C"))
+    P.arc((112, 104, 140, 120), 200, 340, hx("#2D1B12"), 5)
+    P.arc((160, 104, 188, 120), 200, 340, hx("#2D1B12"), 5)
+    _face_features(P, 150, 136, eyes, mouth, spread=24, eye_w=8, eye_h=11, mouth_y=34, mouth_w=15)
+    return P.done()
+
+
+@lru_cache(maxsize=None)
+def robo(eyes="open", mouth=0, wave=False, scale=0.8):
+    P = Pen(300, 340, scale)
+    body, dark, led = hx("#0EA5E9"), hx("#0369A1"), hx("#67E8F9")
+    P.rrect((108, 296, 140, 336), 8, fill=dark)
+    P.rrect((160, 296, 192, 336), 8, fill=dark)
+    P.rrect((88, 182, 212, 306), 26, fill=body)
+    P.rrect((112, 208, 188, 278), 16, fill=hx("#E0F2FE"))
+    P.ellipse((136, 226, 164, 254), fill=hx("#F472B6"))
+    P.ellipse((142, 230, 152, 240), fill=hx("#FDF2F8"))
+    # arms
+    P.line([(90, 214), (62, 276)], dark, 18)
+    P.ellipse((46, 266, 78, 298), fill=hx("#94A3B8"))
+    if wave:
+        P.line([(210, 214), (252, 160)], dark, 18)
+        P.ellipse((238, 132, 270, 164), fill=hx("#94A3B8"))
+    else:
+        P.line([(210, 214), (238, 276)], dark, 18)
+        P.ellipse((222, 266, 254, 298), fill=hx("#94A3B8"))
+    P.rrect((140, 160, 160, 190), 4, fill=hx("#94A3B8"))
+    # head
+    P.line([(150, 22), (150, 52)], hx("#94A3B8"), 6)
+    P.ellipse((138, 8, 162, 32), fill=hx("#FBBF24"))
+    P.ellipse((56, 92, 82, 128), fill=dark)
+    P.ellipse((218, 92, 244, 128), fill=dark)
+    P.rrect((70, 44, 230, 172), 34, fill=body)
+    P.rrect((88, 64, 212, 152), 24, fill=hx("#0F172A"))
+    if eyes == "open":
+        P.rrect((108, 86, 136, 114), 9, fill=led)
+        P.rrect((164, 86, 192, 114), 9, fill=led)
+        P.ellipse((112, 90, 120, 98), fill=hx("#ECFEFF"))
+        P.ellipse((168, 90, 176, 98), fill=hx("#ECFEFF"))
+    else:
+        P.rrect((106, 98, 138, 106), 4, fill=led)
+        P.rrect((162, 98, 194, 106), 4, fill=led)
+    if mouth == 0:
+        P.arc((126, 112, 174, 140), 20, 160, led, 5)
+    else:
+        hts = [8, 16, 12, 18, 9] if mouth == 2 else [5, 9, 7, 10, 5]
+        for i, h in enumerate(hts):
+            x = 126 + i * 11
+            P.rrect((x, 134 - h, x + 7, 134 + h * 0.4), 3, fill=led)
+    return P.done()
+
+
+@lru_cache(maxsize=None)
+def sheru(eyes="open", mouth=0, wave=False, scale=0.8):
+    P = Pen(300, 340, scale)
+    fur, mane, light = hx("#FBBF24"), hx("#D97706"), hx("#FEF3C7")
+    # tail
+    P.line([(200, 290), (252, 270), (262, 236)], fur, 12)
+    P.ellipse((248, 216, 278, 246), fill=mane)
+    P.ellipse((88, 190, 212, 330), fill=fur)
+    P.ellipse((118, 220, 182, 318), fill=light)
+    P.ellipse((96, 306, 138, 336), fill=fur)
+    P.ellipse((162, 306, 204, 336), fill=fur)
+    P.ellipse((72, 236, 104, 296), fill=fur)
+    if not wave:
+        P.ellipse((196, 236, 228, 296), fill=fur)
+    # mane petals
+    import math as _m
+    for k in range(14):
+        a = 2 * _m.pi * k / 14
+        x, y = 150 + 86 * _m.cos(a), 122 + 86 * _m.sin(a)
+        P.ellipse((x - 34, y - 34, x + 34, y + 34), fill=mane if k % 2 else shade(mane, 1.12))
+    P.ellipse((70, 42, 230, 202), fill=mane)
+    P.ellipse((92, 54, 128, 90), fill=fur)
+    P.ellipse((172, 54, 208, 90), fill=fur)
+    P.ellipse((100, 62, 120, 82), fill=hx("#F9A8D4"))
+    P.ellipse((180, 62, 200, 82), fill=hx("#F9A8D4"))
+    P.ellipse((86, 64, 214, 194), fill=fur)
+    P.ellipse((116, 132, 184, 186), fill=light)
+    _face_features(P, 150, 116, eyes, mouth, ink="#3B2412", spread=27, eye_w=8, eye_h=11, mouth_y=44, mouth_w=13)
+    P.poly([(138, 136), (162, 136), (150, 150)], fill=hx("#7C2D12"))
+    if wave:
+        P.line([(206, 246), (252, 186)], fur, 30)
+        P.ellipse((234, 156, 274, 196), fill=fur)
+        for dx in (-10, 0, 10):
+            P.ellipse((250 + dx - 4, 158, 250 + dx + 4, 166), fill=shade(fur, 0.8))
+    return P.done()
+
+
+def character(kind, eyes="open", mouth=0, wave=False, scale=0.8):
+    """Presenter sprite. kind: ollie | maryam | yusuf | robo | sheru."""
+    if kind == "maryam":
+        return maryam(eyes, mouth, wave, scale)
+    if kind == "yusuf":
+        return yusuf(eyes, mouth, wave, scale)
+    if kind == "robo":
+        return robo(eyes, mouth, wave, scale)
+    if kind == "sheru":
+        return sheru(eyes, mouth, wave, scale)
+    return owl(eyes, mouth, wave, scale)
+
+
 @lru_cache(maxsize=None)
 def star(color="#FFD43B", size=60, outline="#F08C00"):
     P = Pen(100, 100, size / 100)

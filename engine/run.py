@@ -81,8 +81,11 @@ def ctx_for(plan):
     W, H = (1080, 1920) if portrait else (1920, 1080)
     pal = PALETTES.get(plan.get("palette", "bright"), PALETTES["bright"])
     brand = dict(plan.get("brand") or {})
+    presenter = plan.get("presenter") or ("ollie" if plan.get("mascot", True) else "none")
+    if presenter not in ("ollie", "maryam", "yusuf", "robo", "sheru", "none"):
+        presenter = "ollie"
     return dict(W=W, H=H, portrait=portrait, palette=pal, brand=brand, plan=plan, sfx=plan.get("sfx", True),
-                mascot=plan.get("mascot", True), captions=plan.get("captions", True))
+                presenter=presenter, mascot=presenter != "none", captions=plan.get("captions", True))
 
 
 def scene_bg(ctx, si, spec):
@@ -251,14 +254,14 @@ def compose(scene, i, env, ctx):
     d = ImageDraw.Draw(fr)
     chip_draw(d, ctx, scene)
     scene.draw(fr, d, t)
-    st = scene.owl_state(t)
-    if st and (ctx["mascot"] or not scene.owl_corner):
-        if ctx["mascot"]:
-            v = env[min(i, len(env) - 1)]
-            beak = 0 if v < 0.18 else (1 if v < 0.6 else 2)
-            eyes = "closed" if (t % 3.7) < 0.13 else "open"
-            bob = 7 * math.sin(2 * math.pi * t / 2.2)
-            put(fr, owl(eyes, beak, st.get("wave", False), st["scale"]), st["pos"][0], st["pos"][1] + bob)
+    st = scene.owl_state(t) if ctx["mascot"] else None
+    if st:
+        v = env[min(i, len(env) - 1)]
+        mouth = 0 if v < 0.18 else (1 if v < 0.6 else 2)
+        eyes = "closed" if (t % 3.7) < 0.13 else "open"
+        bob = 7 * math.sin(2 * math.pi * t / 2.2)
+        put(fr, character(ctx["presenter"], eyes, mouth, st.get("wave", False), st["scale"]), st["pos"][0],
+            st["pos"][1] + bob)
     if ctx["captions"]:
         caption_draw(d, scene, t, ctx)
     W, H = ctx["W"], ctx["H"]
@@ -348,13 +351,15 @@ def make_thumb(plan, ctx, path):
         for k, e in enumerate(emojis):
             put(img, emoji(e, 230), 540 + (k - (len(emojis) - 1) / 2) * 280, 1000)
         if ctx["mascot"]:
-            put(img, owl("open", 0, True, 1.1), 540, 1450)
+            put(img, character(ctx["presenter"], "open", 0, True, 1.1), 540, 1450)
     else:
         spots = [(990, 150, 190), (1185, 215, 150)]
         for (x, y, sz), e in zip(spots, emojis[:2]):
             put(img, emoji(e, sz), x, y)
         if ctx["mascot"]:
-            put(img, owl("open", 0, True, 0.95), 1100, 530)
+            put(img, character(ctx["presenter"], "open", 0, True, 0.95), 1100, 530)
+        else:
+            put(img, emoji(emojis[-1], 230), 1090, 520)
     ch = ctx["brand"].get("channel")
     if ch:
         pill(d, ch, W / 2 if portrait else 440, H - 70 if not portrait else 1780, 32, "#7B5CD6", maxw=W - 120)

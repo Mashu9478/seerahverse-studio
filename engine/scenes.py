@@ -142,8 +142,9 @@ class TitleScene(Scene):
     def draw(self, fr, d, t):
         ch = self.ctx["brand"].get("channel") or ""
         pill(d, ch, self.cx, 80 if not self.P else 150, 34, "#7B5CD6", scale=pop(t, 0.2), maxw=900)
-        cx = 1230 if not self.P else 540
-        maxw = 1250 if not self.P else 960
+        solo = not self.ctx.get("mascot", True)
+        cx = (960 if solo else 1230) if not self.P else 540
+        maxw = (1500 if solo else 1250) if not self.P else 960
         words = self.title.split() or [""]
         size = 150 if not self.P else 120
         lines, size = fit_lines(self.title, maxw, size, 3, 700)
@@ -763,6 +764,9 @@ class OutroScene(Scene):
         s = self.spec
         b = self.ctx["brand"]
         confetti_draw(d, t, self.W, self.H, seed=9, n=60)
+        if not self.ctx.get("mascot", True):
+            x, y = (540, 760) if self.P else (960, 560)
+            put(fr, emoji("🎉", 300), x, y + 14 * math.sin(t * 2.5), pop(t, 0.5) * (1 + 0.04 * math.sin(t * 4)))
         TB(d, strip_emoji(s.get("title") or "Great job, stars!"), self.cx, 165 if not self.P else 260, self.maxw, 100,
            "#E64BA6", 700, stroke=12, max_lines=2, scale=pop(t, 0.2) * (1 + 0.03 * math.sin(t * 5)))
         burst(fr, self.cx, 165 if not self.P else 260, t, 0.4, n=14, dist=560, size=60, dur=1.2)
