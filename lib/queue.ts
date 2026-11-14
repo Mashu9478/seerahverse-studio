@@ -3,14 +3,20 @@ import { startRender, stopSandbox } from "./sandbox";
 import { internalKey } from "./auth";
 
 let ticking = false;
+let again = false;
 
 /**
  * Advance the pipeline: fail stale jobs, then start queued renders up to the parallel limit.
  * Safe to call often (from polling, after events). Uses an atomic claim so two calls never start the same job.
  */
-export async function tick(base: string) {
-  if (ticking) return;
+export async function tick(base: string): Promise<void> {
+  if (ticking) {
+    // another tick is running in this instance — make sure it runs once more when done
+    again = true;
+    return;
+  }
   ticking = true;
+  again = false;
   try {
     // 1) stale renders: no progress for 5 minutes
     const stale = await q<VideoRow>(
@@ -63,6 +69,10 @@ export async function tick(base: string) {
     );
   } finally {
     ticking = false;
+  }
+  if (again) {
+    again = false;
+    await tick(base);
   }
 }
 

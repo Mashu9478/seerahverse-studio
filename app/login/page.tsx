@@ -78,7 +78,7 @@ export default function LoginPage() {
           <motion.div animate={{ rotate: [0, -6, 6, 0] }} transition={{ duration: 2.4, repeat: Infinity }} className="mx-auto mb-3 w-fit text-6xl">
             🦉
           </motion.div>
-          <h1 className="text-3xl font-semibold">SeerahVerse Video Studio</h1>
+          <h1 className="text-3xl font-semibold" style={{ fontKerning: "none" }}>SeerahVerse Video Studio</h1>
           <p className="mt-1 text-slate-500">Turn any lesson into a fun, narrated cartoon for YouTube.</p>
         </div>
         <Suspense>

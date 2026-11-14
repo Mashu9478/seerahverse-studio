@@ -124,7 +124,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <Link href="/" className="mb-6 flex items-center gap-3 px-2">
       <Owl className="h-11 w-11 drop-shadow" />
       <div className="leading-tight">
-        <div className="font-display text-lg font-semibold text-ink">SeerahVerse</div>
+        <div className="font-display text-lg font-semibold text-ink" style={{ fontKerning: "none" }}>SeerahVerse</div>
         <div className="text-xs font-bold uppercase tracking-wider text-brand-500">Video Studio</div>
       </div>
     </Link>
