@@ -204,7 +204,7 @@ class State:
         def P(i):
             if i not in props:
                 props[i] = {"op": 0.0 if i in S.hidden else 1.0, "dx": 0.0, "dy": 0.0, "sc": 1.0,
-                            "wipe": None, "fill": None, "origin": None}
+                            "wipe": None, "fill": None, "origin": None, "rot": 0.0, "rorg": None}
             return props[i]
 
         for i in S.hidden:
@@ -242,6 +242,10 @@ class State:
                 p = P(a["id"])
                 p["sc"] += (float(a.get("to", 1)) - p["sc"]) * ease(u)
                 p["origin"] = a.get("origin")
+            elif do == "rotate":
+                p = P(a["id"])
+                p["rot"] += (float(a.get("to", 0)) - p["rot"]) * ease(u)
+                p["rorg"] = a.get("origin") or p["rorg"]
             elif do == "fill":
                 p = P(a["id"])
                 prev = p["fill"]
@@ -338,6 +342,9 @@ class Renderer:
             if abs(p["sc"] - 1) > 1e-3:
                 o = p["origin"] or self._center_guess(el)
                 pre += f"translate({o[0]:.2f} {o[1]:.2f}) scale({p['sc']:.4f}) translate({-o[0]:.2f} {-o[1]:.2f}) "
+            if abs(p["rot"]) > 0.01:
+                o = p["rorg"] or self._center_guess(el)
+                pre = f"rotate({p['rot']:.3f} {o[0]:.2f} {o[1]:.2f}) " + pre
             if abs(p["dx"]) > 0.01 or abs(p["dy"]) > 0.01:
                 pre = f"translate({p['dx']:.2f} {p['dy']:.2f}) " + pre
             if pre:
@@ -776,6 +783,9 @@ def run_job(plan, out_dir, rep=None, stills=None):
     if clips is None:
         clips, durs = narrate(parts, cfg, rep)
         np.savez(cache, key=key, clips=np.array(clips, dtype=object), durs=np.array(durs))
+    # pauses can change without re-recording: rebuild beat totals from the current plan
+    _beats = [b for p in parts for s in p["steps"] for b in s["beats"]]
+    durs = [(sp, sp + float(b.get("pause") if b.get("pause") is not None else 0.35)) for (sp, _t), b in zip(durs, _beats)]
     tls, total = part_timelines(parts, durs)
     print(f"duration {total:.1f}s, {len(parts)} part(s), {len(clips)} beats", flush=True)
     if stills is not None:

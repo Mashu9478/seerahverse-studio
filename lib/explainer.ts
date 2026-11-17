@@ -16,7 +16,7 @@ const XLINKNS = "http://www.w3.org/1999/xlink";
 const MAX_STAGE_BYTES = 400_000;
 
 /** Actions that animate a part of the drawing and therefore need a real element id. */
-const NEEDS_STAGE_ID = new Set(["show", "hide", "pop", "wipe", "move", "scale", "fill"]);
+const NEEDS_STAGE_ID = new Set(["show", "hide", "pop", "wipe", "move", "scale", "rotate", "fill"]);
 
 const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x));
 const isNum = (x: unknown): x is number => typeof x === "number" && Number.isFinite(x);
@@ -178,6 +178,15 @@ function cleanAction(raw: ExplainerAction, ids: Set<string>, drop: (why: string)
       a.to = clamp(f, 0.05, 6);
       break;
     }
+    case "rotate": {
+      const d = isNum(a.to) ? a.to : Array.isArray(a.to) ? Number(a.to[0]) : NaN;
+      if (!Number.isFinite(d)) {
+        drop(`a tilt animation with no angle`);
+        return null;
+      }
+      a.to = clamp(d, -360, 360);
+      break;
+    }
     case "fill":
       if (!isColor(a.color)) {
         drop(`a colour change with no valid colour`);
@@ -251,7 +260,7 @@ function cleanAction(raw: ExplainerAction, ids: Set<string>, drop: (why: string)
       break;
     }
   }
-  if (kind === "scale" || kind === "pop") {
+  if (kind === "scale" || kind === "pop" || kind === "rotate") {
     const o = numArray(a.origin, 2);
     if (o) a.origin = o;
     else delete a.origin;

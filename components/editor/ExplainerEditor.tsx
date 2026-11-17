@@ -15,7 +15,7 @@ import { Card, IconButton, cx } from "@/components/ui";
 
 /* ------------------------------------------------------------------ helpers */
 
-const ELEMENT_ACTIONS = new Set(["show", "hide", "pop", "wipe", "move", "scale", "fill"]);
+const ELEMENT_ACTIONS = new Set(["show", "hide", "pop", "wipe", "move", "scale", "rotate", "fill"]);
 
 const ACTION_META: Record<string, { emoji: string; label: string; tone: string }> = {
   show: { emoji: "✨", label: "Show", tone: "bg-emerald-400/10 text-emerald-200 ring-emerald-400/25" },

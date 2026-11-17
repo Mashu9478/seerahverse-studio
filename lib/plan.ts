@@ -171,7 +171,7 @@ export type Beat = z.infer<typeof BeatSchema>;
 /* ------------------------------------------------------------------ */
 
 export const EXPLAINER_ACTIONS = [
-  "show", "hide", "pop", "wipe", "move", "scale", "fill", "camera", "label", "unlabel", "flow", "pulse",
+  "show", "hide", "pop", "wipe", "move", "scale", "rotate", "fill", "camera", "label", "unlabel", "flow", "pulse",
 ] as const;
 
 const num = z.number();
@@ -186,8 +186,8 @@ export const ExplainerActionSchema = z
     dur: num.optional().describe("Animation length in seconds (flow: how long particles keep coming)"),
     dir: z.enum(["up", "down", "left", "right"]).optional().describe("wipe direction (the part grows this way)"),
     box: z.array(num).nullable().optional().describe("wipe: [x, y, w, h] area the part occupies. camera: [x, y, width] (height follows the frame shape) or null = whole stage"),
-    to: z.union([z.array(num), num]).optional().describe("move: [dx, dy] offset; scale: factor"),
-    origin: pt.optional().describe("pop/scale: centre point"),
+    to: z.union([z.array(num), num]).optional().describe("move: [dx, dy] offset; scale: factor; rotate: degrees (clockwise)"),
+    origin: pt.optional().describe("pop/scale/rotate: centre point"),
     color: z.string().optional().describe("fill colour / flow colour / pulse colour, #RRGGBB"),
     text: z.string().optional().describe("label text (1-3 words)"),
     point: pt.optional().describe("label: point on the part; pulse: centre"),

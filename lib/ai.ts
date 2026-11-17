@@ -311,6 +311,7 @@ const AiExplainerAction = z.object({
   box: z.array(z.number()).nullable().optional(),
   to: z.array(z.number()).optional().describe("move: [dx, dy]"),
   factor: z.number().optional().describe("scale: size factor"),
+  degrees: z.number().optional().describe("rotate: angle in degrees, clockwise"),
   origin: z.array(z.number()).optional(),
   color: z.string().optional(),
   text: z.string().optional(),
@@ -389,9 +390,10 @@ function toExplainerPart(p: AiPart): ExplainerPart {
         ...(b.caption ? { caption: b.caption } : {}),
         ...(b.pause != null ? { pause: b.pause } : {}),
         actions: (b.actions ?? []).map((a) => {
-          const { factor, ...rest } = a;
+          const { factor, degrees, ...rest } = a;
           const out: Record<string, unknown> = { ...rest };
           if (a.do === "scale") out.to = factor ?? a.to?.[0];
+          if (a.do === "rotate") out.to = degrees ?? a.to?.[0];
           for (const k of Object.keys(out)) if (out[k] === undefined) delete out[k];
           return out as ExplainerAction;
         }),
@@ -436,6 +438,7 @@ ACTIONS ("do"):
 - wipe {id, dir, box:[x,y,w,h]}: reveal the part progressively as if it grows: dir "down" reveals top→bottom (roots growing), "up" bottom→top (a stem, water level rising), "right" left→right, "left" right→left. box = the area the part covers.
 - move {id, to:[dx,dy]}: slide the part to an offset from where it was drawn (stays there). Use it for tools, pistons, valves, a moving moon, etc.
 - scale {id, factor, origin:[x,y]}: grow/shrink (e.g. a muscle contracting, a balloon inflating).
+- rotate {id, degrees, origin:[x,y]}: tilt/turn a part around a point, clockwise; animate back with degrees 0 (e.g. a jug pouring, a lever, a wheel, a door). Combine with move to lift while tilting.
 - fill {id, color}: smoothly recolour the part (e.g. blood turning from blue to red, a leaf turning yellow, metal heating up).
 - camera {box:[x,y,width]} zooms to that region (height follows the frame shape: height = width × ${portrait ? "1.78" : "0.5625"}), box null = whole stage. The explained part must sit in the MIDDLE of the box (between 22% and 80% of the box height from its top), because the title and captions cover the top and bottom. Zoom in to show detail, zoom out to show the whole. Move the camera at most once per beat; dur 1.2–1.6.
 - label {id:"l-name", text, point:[x,y], side:"left"|"right", len, dy}: a small UPPERCASE label (1–3 words) with a leader line from point (stage coordinates, ON the part) to the text; len = line length and dy = vertical offset, both in SCREEN pixels (the screen is ${W} px wide). Make sure the text (~20 px per letter) stays on screen at the current camera. Max 3 labels at once.
