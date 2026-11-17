@@ -40,7 +40,11 @@ if not FFMPEG:
 
 
 # ----------------------------------------------------------------- helpers
-def font(size, weight=600):
+def font(size, weight=600, urdu=False):
+    if urdu:
+        w = 700 if weight >= 700 else 600
+        return ImageFont.truetype(os.path.join(FONT_DIR, f"NotoNastaliqUrdu-{w}.ttf"), max(4, int(size)),
+                                  layout_engine=ImageFont.Layout.RAQM)
     return ImageFont.truetype(os.path.join(FONT_DIR, f"Fredoka-{weight}.ttf"), max(4, int(size)))
 
 
@@ -150,7 +154,7 @@ def build_timeline(plan, beat_durs, lead=0.6):
             for a in b.get("actions", []):
                 a = dict(a)
                 if "word" in a and "at" not in a:
-                    a["at"] = word_time(b.get("say", ""), a["word"], speech)
+                    a["at"] = word_time(b.get("say", ""), a["word"], speech) + float(a.get("after", 0))
                 a["t0"] = t + float(a.get("at", 0))
                 actions.append(a)
             t += total
@@ -306,10 +310,18 @@ class Renderer:
             self.L = dict(band=250, tag_y=64, title_y=142, title_y_notag=110, title_size=66, title_lh=76,
                           title_maxw=self.W - 520, title_lines=1, cap_size=42, cap_lh=54, cap_maxw=self.W - 560,
                           cap_bottom=60, cap_lines=2)
-        self.F_tag = font(30, 600)
-        self.F_title = font(self.L["title_size"], 700)
-        self.F_label = font(31, 600)
-        self.F_cap = font(self.L["cap_size"], 600)
+        self.rtl = bool(part.get("rtl")) or part.get("lang") == "ur"
+        U = self.rtl
+        if U:  # Nastaliq needs taller lines and slightly smaller sizes
+            self.L["title_size"] = int(self.L["title_size"] * 0.9)
+            self.L["title_lh"] = int(self.L["title_lh"] * 1.5)
+            self.L["cap_size"] = int(self.L["cap_size"] * 0.95)
+            self.L["cap_lh"] = int(self.L["cap_lh"] * 1.55)
+        self.F_tag = font(38 if U else 30, 600, U)
+        self.F_title = font(self.L["title_size"], 700, U)
+        self.F_label = font(42 if U else 31, 600, U)
+        self.F_cap = font(self.L["cap_size"], 600, U)
+        self.dir = "rtl" if U else None
         band = Image.new("L", (1, self.L["band"]))
         b0 = self.L["band"] * 0.6
         for y in range(self.L["band"]):
@@ -499,6 +511,12 @@ class Renderer:
                               halo=(*bg, int(235 * top)))
 
     def _tracked(self, d, xy, s, f, fill, tracking, anchor, halo=None):
+        if self.rtl:
+            anc = {"l": "lm", "m": "mm", "r": "rm"}[anchor]
+            if halo:
+                d.text(xy, s, font=f, fill=halo, anchor=anc, direction="rtl", stroke_width=7, stroke_fill=halo)
+            d.text(xy, s, font=f, fill=fill, anchor=anc, direction="rtl")
+            return d.textlength(s, font=f, direction="rtl")
         widths = [d.textlength(ch, font=f) for ch in s]
         total = sum(widths) + tracking * max(0, len(s) - 1)
         x0 = xy[0] - (total / 2 if anchor == "m" else total if anchor == "r" else 0)
@@ -538,7 +556,8 @@ class Renderer:
         y_title = L["title_y"] if h.get("tag") else L["title_y_notag"]
         if h.get("tag"):
             tag = str(h["tag"]).upper()
-            tw = sum(d.textlength(c, font=self.F_tag) for c in tag) + 3 * max(0, len(tag) - 1)
+            tw = (d.textlength(tag, font=self.F_tag, direction="rtl") if self.rtl
+                  else sum(d.textlength(c, font=self.F_tag) for c in tag) + 3 * max(0, len(tag) - 1))
             bx0, bx1 = W / 2 - tw / 2 - 26, W / 2 + tw / 2 + 26
             by = L["tag_y"] + dy
             d.rounded_rectangle([bx0, by - 26, bx1, by + 26], radius=26, fill=(255, 255, 255, int(255 * op)),
@@ -553,14 +572,23 @@ class Renderer:
         hl = set(re.findall(r"[a-z0-9']+", (h.get("hl") or "").lower()))
         lh = L["title_lh"] * (f.size / self.F_title.size)
         y = y_title + dy - (len(lines) - 1) * lh / 2
+        if self.rtl:
+            hl = set((h.get("hl") or "").split())
+        sp = d.textlength(" ", font=f)
         for ln in lines:
-            tw = d.textlength(ln, font=f)
-            x = W / 2 - tw / 2
-            for wd in ln.split(" "):
-                key = re.sub(r"[^a-z0-9']", "", wd.lower())
+            words = ln.split(" ")
+            ws = [d.textlength(w, font=f, direction=self.dir) for w in words]
+            tw = sum(ws) + sp * (len(words) - 1)
+            x = W / 2 + tw / 2 if self.rtl else W / 2 - tw / 2
+            for wd, ww in zip(words, ws):
+                key = wd if self.rtl else re.sub(r"[^a-z0-9']", "", wd.lower())
                 colr = hex2rgb(self.accent) if key and key in hl else ink
-                d.text((x, y), wd, font=f, fill=(*colr, int(255 * op)), anchor="lm")
-                x += d.textlength(wd + " ", font=f)
+                if self.rtl:
+                    d.text((x, y), wd, font=f, fill=(*colr, int(255 * op)), anchor="rm", direction="rtl")
+                    x -= ww + sp
+                else:
+                    d.text((x, y), wd, font=f, fill=(*colr, int(255 * op)), anchor="lm")
+                    x += ww + sp
             y += lh
 
     def draw_caption(self, d, t):
@@ -586,7 +614,7 @@ class Renderer:
         lh = L["cap_lh"]
         hgt = lh * len(lines) + 40
         y0 = H - L["cap_bottom"] - hgt
-        wmax = max(d.textlength(l, font=self.F_cap) for l in lines)
+        wmax = max(d.textlength(l, font=self.F_cap, direction=self.dir) for l in lines)
         d.rounded_rectangle([W / 2 - wmax / 2 - 34, y0, W / 2 + wmax / 2 + 34, y0 + hgt], radius=30,
                             fill=(255, 255, 255, int(235 * u)))
         all_words = b["caption"].split()
@@ -601,14 +629,21 @@ class Renderer:
                 break
         k = first
         ink, acc = hex2rgb(self.ink), hex2rgb(self.accent)
+        sp = d.textlength(" ", font=self.F_cap)
         for li, l in enumerate(lines):
-            tw = d.textlength(l, font=self.F_cap)
-            x = W / 2 - tw / 2
+            words = l.split()
+            ws = [d.textlength(w, font=self.F_cap, direction=self.dir) for w in words]
+            tw = sum(ws) + sp * (len(words) - 1)
+            x = W / 2 + tw / 2 if self.rtl else W / 2 - tw / 2
             y = y0 + 20 + lh * li + lh / 2
-            for w in l.split():
+            for w, ww in zip(words, ws):
                 c = acc if k < lit else ink
-                d.text((x, y), w, font=self.F_cap, fill=(*c, int(255 * u)), anchor="lm")
-                x += d.textlength(w + " ", font=self.F_cap)
+                if self.rtl:
+                    d.text((x, y), w, font=self.F_cap, fill=(*c, int(255 * u)), anchor="rm", direction="rtl")
+                    x -= ww + sp
+                else:
+                    d.text((x, y), w, font=self.F_cap, fill=(*c, int(255 * u)), anchor="lm")
+                    x += ww + sp
                 k += 1
 
     def frame(self, t):
@@ -643,7 +678,7 @@ def parts_of(plan):
                "music": plan.get("music", "calm"), "sfx": plan.get("sfx", True), "title": plan.get("title", ""),
                "fps": 30}
         return parts, cfg
-    part = {k: plan[k] for k in ("stage", "hidden", "camera", "steps", "theme", "w", "h", "captions") if k in plan}
+    part = {k: plan[k] for k in ("stage", "hidden", "camera", "steps", "theme", "w", "h", "captions", "lang", "rtl") if k in plan}
     cfg = {"voice": plan.get("voice", "af_heart"), "speed": plan.get("speed", 0.92),
            "music": plan.get("music", "calm"), "sfx": plan.get("sfx", True), "title": plan.get("title", ""),
            "fps": int(plan.get("fps", 30))}

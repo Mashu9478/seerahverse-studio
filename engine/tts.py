@@ -36,6 +36,18 @@ PHRASES = [
 ]
 _PH = [(re.compile(p, re.I), ipa) for p, ipa in PHRASES]
 
+# Urdu-script phrases for the Hindi/Urdu voices (hf_*, hm_*)
+UR_PHRASES = [
+    (r"السلام\s*علیکم", "ˌʌssəlˈaːmʊ ʌlˈɛːkʊm"),
+    (r"صلی\s*اللہ\s*علیہ\s*و\s*سلم", "sˌʌllʌllˈaːhʊ ʌlˈɛːhi ʋəsˈʌllʌm"),
+    (r"استغفراللہ", "ʌstʌɣfˈɪɾʊllaːh"),
+    (r"اللہ", "ʌllˈaːh"),
+    (r"ترمذی", "tɪɾmˈɪzi"),
+    (r"توبہ", "tˈɔːbaː"),
+]
+_UR = [(re.compile(p), ipa) for p, ipa in UR_PHRASES]
+_UR_PUNCT = str.maketrans({"۔": ".", "،": ",", "؟": "?", "؛": ";"})
+
 
 class Voice:
     def __init__(self):
@@ -43,10 +55,10 @@ class Voice:
         self.k = Kokoro(os.path.join(MODEL_DIR, "kokoro-v1.0.onnx"), os.path.join(MODEL_DIR, "voices-v1.0.bin"))
         self.voices = set(self.k.get_voices())
 
-    def _segments(self, text):
+    def _segments(self, text, table=None):
         """Split text into [(is_phoneme, str)] around known phrases."""
         segs = [(False, text)]
-        for rx, ipa in _PH:
+        for rx, ipa in (table or _PH):
             out = []
             for is_ph, s in segs:
                 if is_ph:
@@ -64,6 +76,8 @@ class Voice:
         return segs
 
     def say(self, text, voice="af_heart", speed=0.92):
+        if voice[:1] == "h" and voice in self.voices:
+            return self._say_ur(text, voice, speed)
         text = re.sub(r"[؀-ۿﷺﷻ]+", " ", text)  # drop Arabic script / ﷺ glyphs
         text = re.sub(r"\s+", " ", text).strip()
         if not text:
@@ -84,6 +98,28 @@ class Voice:
             ph = " ".join(p.strip() for p in parts if p.strip())
             ph = re.sub(r"\s+([,.!?;:])", r"\1", ph)
             a, _ = self.k.create(ph, voice=voice, speed=speed, is_phonemes=True)
+        a = np.asarray(a, np.float32)
+        idx = np.where(np.abs(a) > 0.01)[0]
+        if len(idx):
+            a = a[max(0, idx[0] - 240): idx[-1] + 1200]
+        return a
+
+
+    def _say_ur(self, text, voice, speed):
+        """Urdu (Urdu script) or Hindi (Devanagari) narration with the Hindi voices."""
+        text = re.sub(r"\s+", " ", text.translate(_UR_PUNCT).replace("ﷺ", " صلی اللہ علیہ وسلم ")).strip()
+        if not text:
+            return np.zeros(int(0.2 * SR), np.float32)
+        lang = "ur" if re.search(r"[؀-ۿ]", text) else "hi"
+        parts = []
+        for is_ph, seg in self._segments(text, _UR):
+            if is_ph:
+                parts.append(seg)
+            elif seg.strip():
+                parts.append(self.k.tokenizer.phonemize(seg, lang))
+        ph = " ".join(p.strip() for p in parts if p.strip())
+        ph = re.sub(r"\s+([,.!?;:])", r"\1", ph)
+        a, _ = self.k.create(ph, voice=voice, speed=speed, is_phonemes=True)
         a = np.asarray(a, np.float32)
         idx = np.where(np.abs(a) > 0.01)[0]
         if len(idx):
