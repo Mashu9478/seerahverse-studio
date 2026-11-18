@@ -24,7 +24,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   let warnings = sp.warnings;
   if (plan.explainer) {
     try {
-      const ex = sanitizeExplainer(plan.explainer, plan.format);
+      const ex = sanitizeExplainer(plan.explainer, plan.format, { lang: plan.language });
       plan = { ...plan, style: "explainer", explainer: ex.explainer, scenes: [] };
       warnings = [...warnings, ...ex.warnings];
     } catch (e) {

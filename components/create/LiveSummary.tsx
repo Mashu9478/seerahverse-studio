@@ -1,12 +1,13 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Clapperboard, Clock3, ImageIcon, Mic2, Music2, Smartphone, MonitorPlay } from "lucide-react";
+import { Clapperboard, Clock3, ImageIcon, Languages, Mic2, Music2, Smartphone, MonitorPlay } from "lucide-react";
 import { AGE_GROUPS, MUSIC, SUBJECTS, VOICES, characterById } from "@/lib/constants";
 import { fmtDuration } from "@/lib/plan";
 import type { StyleValue } from "../StylePanel";
 import type { FormatValue } from "../FormatPicker";
 import { cx } from "../ui";
+import { LanguageChip, URDU_FONT } from "../LanguagePicker";
 
 function Row({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) {
   return (
@@ -35,7 +36,7 @@ export function LiveSummary({
   style: StyleValue | null;
 }) {
   const presenter = characterById(style?.presenter || (style?.mascot === false ? "none" : "ollie"));
-  const explainer = style?.style === "explainer";
+  const explainer = style?.style === "explainer" || style?.language === "ur";
   const voice = VOICES.find((v) => v.id === style?.voice);
   const music = MUSIC.find((m) => m.id === style?.music);
   const subj = SUBJECTS.find((s) => s.id === subject);
@@ -80,7 +81,11 @@ export function LiveSummary({
 
         <div className="mt-5 rounded-2xl border border-white/[0.07] bg-black/20 p-4">
           <div className="text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">Lesson</div>
-          <div className={cx("mt-1 line-clamp-3 font-display text-lg font-semibold leading-snug", topic.trim() ? "text-fg" : "text-fg-subtle")}>
+          <div
+            dir="auto"
+            className={cx("mt-1 line-clamp-3 font-display text-lg font-semibold leading-snug", topic.trim() ? "text-fg" : "text-fg-subtle")}
+            style={/[\u0600-\u06FF]/.test(topic) ? { fontFamily: URDU_FONT, lineHeight: 1.9 } : undefined}
+          >
             {topic.trim() || (images ? "From your textbook pages" : "Your topic appears here…")}
           </div>
           <div className="mt-3 flex flex-wrap gap-1.5 text-[11px] font-semibold">
@@ -99,6 +104,7 @@ export function LiveSummary({
             label="Format"
             value={fmt.format === "short" ? "Short · 9:16" : "Long · 16:9"}
           />
+          <Row icon={<Languages className="h-4 w-4" />} label="Language" value={<LanguageChip value={style?.language} />} />
           <Row icon={<Clapperboard className="h-4 w-4" />} label="Style" value={explainer ? "🔬 Diagram explainer" : "🎭 Character presenter"} />
           <Row icon={<Clock3 className="h-4 w-4" />} label="Length" value={fmtDuration(fmt.target_seconds)} />
           <Row icon={<Mic2 className="h-4 w-4" />} label="Voice" value={voice ? `${voice.emoji} ${voice.name}` : "—"} />

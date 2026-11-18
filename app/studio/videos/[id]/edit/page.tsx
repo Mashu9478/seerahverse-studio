@@ -19,6 +19,7 @@ import {
   Palette,
   RefreshCw,
   Rocket,
+  SlidersHorizontal,
   Sparkles,
   Wand2,
   MonitorPlay as Youtube,
@@ -45,6 +46,7 @@ import { SceneList, typeMeta } from "@/components/editor/SceneList";
 import { YoutubePanel } from "@/components/editor/YoutubePanel";
 import { ExplainerEditor } from "@/components/editor/ExplainerEditor";
 import { StylePanel, type StyleValue } from "@/components/StylePanel";
+import { LanguageChip, URDU_FONT } from "@/components/LanguagePicker";
 import { FormatPicker } from "@/components/FormatPicker";
 
 type SideTab = "style" | "youtube" | "warnings" | "json";
@@ -418,6 +420,13 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
                 Try again
               </Button>
             )}
+            {failed && (
+              <Link href={`/studio/create?edit=${id}`}>
+                <Button variant="secondary" icon={<SlidersHorizontal className="h-4 w-4" />}>
+                  Edit options
+                </Button>
+              </Link>
+            )}
           </div>
         </Card>
       </div>
@@ -428,7 +437,9 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
   const scene: Scene | undefined = plan.scenes[Math.min(sel, plan.scenes.length - 1)];
   const short = plan.format === "short";
   const stepCount = (plan.explainer?.parts ?? []).reduce((n, p) => n + p.steps.length, 0);
+  const urdu = plan.language === "ur";
   const style: StyleValue = {
+    language: urdu ? "ur" : "en",
     voice: plan.voice,
     speed: plan.speed,
     music: plan.music,
@@ -476,6 +487,8 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
             <div className="min-w-0 flex-1">
               <input
                 aria-label="Video title"
+                dir={urdu ? "rtl" : undefined}
+                style={urdu ? { fontFamily: URDU_FONT } : undefined}
                 className="w-full rounded-lg border border-transparent bg-transparent px-2 py-0.5 font-display text-xl font-semibold text-fg outline-none transition hover:border-white/10 focus:border-brand-400/60 focus:bg-white/[0.04]"
                 value={plan.title}
                 onChange={(e) => change({ ...plan, title: e.target.value })}
@@ -484,6 +497,7 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
               <div className="mt-1 flex flex-wrap items-center gap-2 px-2">
                 <StatusPill status={video.status} />
                 <Badge className={short ? "bg-pink-500/15 text-pink-300" : "bg-violet-500/15 text-violet-300"}>{short ? "📱 Short · 9:16" : "🖥️ Long · 16:9"}</Badge>
+                {urdu && <LanguageChip value="ur" />}
                 <span className="text-[11px] font-semibold text-fg-subtle">
                   {isExplainer ? `${stepCount} steps` : `${plan.scenes.length} scenes`} · {words} words
                 </span>

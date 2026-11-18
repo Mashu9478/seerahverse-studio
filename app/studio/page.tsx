@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowRight, Clapperboard, Clock, Cog, ExternalLink, Eye, Layers, Radio, Sparkles, Timer } from "lucide-react";
+import { AlertTriangle, ArrowRight, Clapperboard, Clock, Cog, ExternalLink, Eye, Layers, Radio, Sparkles, Timer, SlidersHorizontal } from "lucide-react";
 import { api, type VideoListItem } from "@/lib/client";
 import { CHARACTERS } from "@/lib/constants";
 import { fmtDuration } from "@/lib/plan";
@@ -158,7 +158,7 @@ export default function Dashboard() {
             value: stats?.failed,
             icon: <AlertTriangle className="h-4 w-4" />,
             tone: stats && stats.failed ? ("pink" as const) : ("emerald" as const),
-            sub: stats ? (stats.failed ? "Open the queue to retry" : "All clear") : "",
+            sub: stats ? (stats.failed ? "Retry or edit options in the queue" : "All clear") : "",
           },
         ].map((c, i) => (
           <motion.div key={c.label} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 + 0.06 * i }}>
@@ -244,7 +244,23 @@ export default function Dashboard() {
                   <span className="font-mono text-sm font-semibold text-cyan-300">{j.progress}%</span>
                 </div>
                 <Pipeline status={j.status} stage={j.stage} autoRender={j.auto_render} compact />
-                <Progress value={j.progress} className="mt-4 h-1.5" color="bg-gradient-to-r from-cyan-400 to-violet-500" striped />
+                {j.status === "failed" || j.status === "canceled" ? (
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    {j.error && <span className="min-w-0 flex-1 truncate text-xs text-rose-300">{j.error}</span>}
+                    <Link href={`/studio/create?edit=${j.id}`}>
+                      <Button size="sm" variant="secondary" icon={<SlidersHorizontal className="h-4 w-4" />}>
+                        Edit options
+                      </Button>
+                    </Link>
+                    <Link href="/studio/queue">
+                      <Button size="sm" variant="ghost">
+                        Queue
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <Progress value={j.progress} className="mt-4 h-1.5" color="bg-gradient-to-r from-cyan-400 to-violet-500" striped />
+                )}
               </motion.div>
             ))}
           </div>

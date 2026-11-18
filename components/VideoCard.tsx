@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Captions, Check, Clock, Copy, Download, Eye, EyeOff, ImageDown, Monitor, Pencil, Play, RotateCcw, Smartphone, Trash2, Tv } from "lucide-react";
+import { AlertTriangle, Captions, Check, Clock, Copy, Download, Eye, EyeOff, ImageDown, Monitor, Pencil, Play, RotateCcw, SlidersHorizontal, Smartphone, Trash2, Tv } from "lucide-react";
 import { toast } from "sonner";
 import { STATUS_META, SUBJECTS } from "@/lib/constants";
 import { api, copyText, downloadUrl, slug, timeAgo, type VideoFull, type VideoListItem } from "@/lib/client";
 import { fmtDuration } from "@/lib/plan";
 import { Badge, Button, IconButton, Modal, Skeleton, cx } from "./ui";
+import { LanguageChip, URDU_FONT } from "./LanguagePicker";
 
 export function StatusBadge({ status }: { status: string }) {
   const m = STATUS_META[status] ?? STATUS_META.draft;
@@ -238,9 +239,11 @@ export function VideoModal({
   const [v, setV] = useState<VideoFull | null>(null);
   const [busy, setBusy] = useState("");
 
+  const [remake, setRemake] = useState(false);
   useEffect(() => {
     setV(null);
     setBusy("");
+    setRemake(false);
     if (!id) return;
     api<{ video: VideoFull }>(`/api/videos/${id}`)
       .then((r) => setV(r.video))
@@ -362,8 +365,15 @@ export function VideoModal({
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge status={v.status} />
                 <FormatBadge format={v.format} />
+                {(v.plan?.language ?? v.settings?.language) === "ur" && <LanguageChip value="ur" />}
               </div>
-              <h2 className="mt-3 text-2xl font-semibold leading-tight text-fg">{yt?.title || v.plan?.title || v.topic}</h2>
+              <h2
+                dir="auto"
+                className="mt-3 text-2xl font-semibold leading-tight text-fg"
+                style={/[\u0600-\u06FF]/.test(yt?.title || v.plan?.title || v.topic || "") ? { fontFamily: URDU_FONT, lineHeight: 1.9 } : undefined}
+              >
+                {yt?.title || v.plan?.title || v.topic}
+              </h2>
               <p className="mt-1 text-sm text-fg-muted">
                 {subjectEmoji(v.subject)} {v.subject} · {v.age_group} yrs · {v.duration_sec ? fmtDuration(v.duration_sec) : fmtDuration(v.target_seconds)}
               </p>
@@ -419,10 +429,46 @@ export function VideoModal({
                   {v.status === "done" ? "Re-render" : "Render"}
                 </Button>
               )}
+              {["failed", "canceled"].includes(v.status) && (
+                <Link href={`/studio/create?edit=${v.id}`}>
+                  <Button variant="secondary" icon={<SlidersHorizontal className="h-4 w-4" />}>
+                    Edit options
+                  </Button>
+                </Link>
+              )}
+              {["done", "review", "draft"].includes(v.status) && (
+                <Button variant="secondary" icon={<SlidersHorizontal className="h-4 w-4" />} onClick={() => setRemake(true)}>
+                  Edit options &amp; remake
+                </Button>
+              )}
               <Button variant="danger" icon={<Trash2 className="h-4 w-4" />} loading={busy === "delete"} onClick={remove}>
                 {busy === "confirm-delete" ? "Click again to delete" : "Delete"}
               </Button>
             </div>
+            {remake && (
+              <div className="rounded-2xl border border-amber-400/30 bg-amber-400/[0.08] p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-amber-100">Remake this video with new options?</p>
+                    <p className="mt-1 text-xs leading-relaxed text-amber-200/80">
+                      You can change the topic, length, language, style, voice and more. When you save, the current
+                      {v.status === "done" ? " video and its" : ""} script will be replaced by a new one{isPublic && v.status === "done" ? " — and it leaves the public site until the new video is ready" : ""}.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Link href={`/studio/create?edit=${v.id}`}>
+                        <Button size="sm" variant="warm" icon={<SlidersHorizontal className="h-4 w-4" />}>
+                          Yes, edit options
+                        </Button>
+                      </Link>
+                      <Button size="sm" variant="ghost" onClick={() => setRemake(false)}>
+                        Keep it as it is
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

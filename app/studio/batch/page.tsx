@@ -302,7 +302,8 @@ export default function BatchPage() {
                           <input
                             aria-label={`Topic ${i + 1}`}
                             className="input h-10 flex-1 py-0 font-semibold"
-                            placeholder="Topic, e.g. Counting by 2s"
+                            placeholder="Topic (English or اردو), e.g. Counting by 2s"
+                            dir="auto"
                             value={r.topic}
                             maxLength={200}
                             onChange={(e) => update(r.key, { topic: e.target.value })}
@@ -378,7 +379,7 @@ export default function BatchPage() {
         <div className="space-y-4 xl:sticky xl:top-8 xl:self-start">
           <div className="card overflow-hidden">
             <button type="button" onClick={() => setStyleOpen(!styleOpen)} className="flex w-full items-center gap-3 p-5 text-left" aria-expanded={styleOpen}>
-              {style?.style === "explainer" ? (
+              {style?.style === "explainer" || style?.language === "ur" ? (
                 <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-cyan-400/10 text-2xl ring-1 ring-cyan-300/30">🔬</span>
               ) : presenter.id !== "none" ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -388,7 +389,7 @@ export default function BatchPage() {
               )}
               <div className="min-w-0 flex-1">
                 <div className="text-[15px] font-semibold text-fg">Shared style</div>
-                <div className="truncate text-xs text-fg-subtle">Applies to every video · {style?.style === "explainer" ? "diagram explainer" : presenter.id === "none" ? "no character" : `hosted by ${presenter.short}`}</div>
+                <div className="truncate text-xs text-fg-subtle">Applies to every video · {style?.language === "ur" ? "in Urdu · " : ""}{style?.style === "explainer" || style?.language === "ur" ? "diagram explainer" : presenter.id === "none" ? "no character" : `hosted by ${presenter.short}`}</div>
               </div>
               <ChevronDown className={cx("h-4 w-4 text-fg-subtle transition", styleOpen && "rotate-180")} />
             </button>

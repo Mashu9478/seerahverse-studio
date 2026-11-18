@@ -52,11 +52,23 @@ function ExplainerHint() {
 }
 
 /** Choose between the character-presenter style and the diagram-explainer style. */
-export function VideoStylePicker({ value, onChange }: { value: VideoStyle; onChange: (v: VideoStyle) => void }) {
+export function VideoStylePicker({
+  value,
+  onChange,
+  disabled = [],
+  disabledNote,
+}: {
+  value: VideoStyle;
+  onChange: (v: VideoStyle) => void;
+  /** Styles that can't be picked right now (e.g. Character presenter for Urdu). */
+  disabled?: VideoStyle[];
+  disabledNote?: string;
+}) {
   return (
     <div role="radiogroup" aria-label="Video style" className="grid gap-3 sm:grid-cols-2">
       {VIDEO_STYLES.map((s) => {
         const on = value === s.id;
+        const off = disabled.includes(s.id);
         const color = s.id === "explainer" ? "#22D3EE" : "#A78BFA";
         return (
           <motion.button
@@ -64,12 +76,18 @@ export function VideoStylePicker({ value, onChange }: { value: VideoStyle; onCha
             type="button"
             role="radio"
             aria-checked={on}
-            whileHover={{ y: -3 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onChange(s.id)}
+            aria-disabled={off}
+            disabled={off}
+            whileHover={off ? undefined : { y: -3 }}
+            whileTap={off ? undefined : { scale: 0.98 }}
+            onClick={() => !off && onChange(s.id)}
             className={cx(
               "group relative flex flex-col overflow-hidden rounded-2xl border p-3 text-left transition duration-300",
-              on ? "border-transparent bg-white/[0.07]" : "border-white/[0.08] bg-white/[0.025] hover:border-white/20",
+              off
+                ? "cursor-not-allowed border-white/[0.06] bg-white/[0.015] opacity-50 grayscale"
+                : on
+                  ? "border-transparent bg-white/[0.07]"
+                  : "border-white/[0.08] bg-white/[0.025] hover:border-white/20",
             )}
             style={on ? { boxShadow: `0 0 0 1.5px ${color}, 0 18px 50px -20px ${color}` } : undefined}
           >
@@ -82,6 +100,9 @@ export function VideoStylePicker({ value, onChange }: { value: VideoStyle; onCha
               )}
             </div>
             <p className="relative mt-1 text-xs leading-relaxed text-fg-subtle">{s.desc}</p>
+            {off && disabledNote && (
+              <p className="relative mt-2 rounded-lg bg-amber-400/10 px-2 py-1 text-[11px] font-semibold text-amber-200 ring-1 ring-amber-400/25">{disabledNote}</p>
+            )}
             {on && (
               <span className="absolute right-4 top-4 grid h-6 w-6 place-items-center rounded-full text-[#0B0A13]" style={{ background: color }}>
                 <Check className="h-3.5 w-3.5" strokeWidth={3} />

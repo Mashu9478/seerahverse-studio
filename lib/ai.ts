@@ -89,7 +89,30 @@ interface GenInput {
   channel: string;
   presenter: string;
   image_urls: string[];
+  language: "en" | "ur";
 }
+
+/** Spoken-word budget: Urdu narration runs at about 2.3 words a second at the default speed. */
+function spokenWords(g: Pick<GenInput, "language" | "speed">, seconds: number) {
+  return g.language === "ur" ? Math.round(seconds * 2.3 * (g.speed / 0.92)) : targetWords(seconds, g.speed);
+}
+
+const URDU_RULES = `
+LANGUAGE: URDU (this overrides any English wording rules above)
+- The whole video is in URDU, written in Urdu script (Nastaliq-friendly). Never Roman Urdu, never Hindi/Devanagari, no English words except unavoidable names.
+- In Urdu: every beat "say" and "caption", every step "title", "highlight", "tag", every label "text", any word drawn in the SVG, and the YouTube title, description, tags and hashtags.
+- "highlight" must be exact word(s) copied from that step's Urdu title. Every "word" timing key must be an exact substring of that beat's Urdu "say".
+- Step tags: "مرحلہ ۱ از ۴", "مرحلہ ۲ از ۴" … with Urdu digits (۰۱۲۳۴۵۶۷۸۹). Use Urdu digits for any number shown on screen (titles, labels, captions, references). In "say" write numbers as Urdu words (e.g. دو، تین، دس).
+- Punctuation: ۔ for full stops, ، for commas, ؟ for questions, ! is fine.
+- The Prophet's name: in "say" always write صلی اللہ علیہ وسلم in full; ﷺ may appear only in a "caption".
+- References in captions in Urdu: (بخاری) (مسلم) (ترمذی) (الزمر: ۵۳). Only references you are certain of, same accuracy rules as always.
+- Greeting (if allowed): "السلام علیکم!" once at the very start. Subscribe line (if allowed): one short Urdu sentence.
+- Simple, warm, natural Pakistani Urdu for children: short sentences (6–12 words), everyday words (پانی، دل، گلاس، امی ابو) rather than heavy Persian/Arabic vocabulary; talk to the child ("دیکھیں!"، "کیا آپ جانتے ہیں؟").
+- Labels: 1–3 Urdu words (no UPPERCASE in Urdu). Captions are written right-to-left by the engine automatically.
+- SVG: still avoid text in the drawing. If a word is essential on an object (a label on a jar), use <text … font-family="Noto Nastaliq Urdu, Fredoka" direction="rtl" text-anchor="middle"> with Urdu text.
+- URDU STYLE SAMPLE (beats from a finished video, for tone only):
+  {"tag":"مرحلہ ۲ از ۴","title":"پھر گناہ آتے ہیں","highlight":"گناہ","beats":[{"say":"لیکن پھر ہم غلطیاں کرتے ہیں۔ جیسے جھوٹ بولنا،","actions":[{"do":"label","id":"s1","text":"جھوٹ","point":[540,900],"side":"left","len":120,"dy":-40,"word":"جھوٹ"}]},{"say":"نبی صلی اللہ علیہ وسلم نے فرمایا کہ گناہ سے دل پر ایک کالا نشان پڑ جاتا ہے۔","caption":"گناہ سے دل پر کالا نشان پڑ جاتا ہے۔ (ترمذی)","actions":[{"do":"pulse","point":[540,1080],"r":70,"word":"کالا"}]}]}`;
+
 
 function briefText(g: GenInput, extra = "") {
   const words = targetWords(g.target_seconds, g.speed);
@@ -161,6 +184,7 @@ export function genInputFromVideo(v: VideoRow): GenInput {
     channel: v.settings.channel ?? "AI_LEARNING_VIDEO_GENERATION_BY_HAMAS",
     presenter: v.settings.presenter ?? (v.settings.mascot === false ? "none" : "ollie"),
     image_urls: v.image_urls ?? [],
+    language: v.settings.language === "ur" ? "ur" : "en",
   };
 }
 
@@ -172,7 +196,8 @@ export async function generateScript(
   modelId: string,
   onProgress?: (msg: string) => Promise<void>,
 ): Promise<{ plan: VideoPlan; youtube: YoutubeMeta; warnings: string[] }> {
-  if (v.settings?.style === "explainer") return generateExplainer(v, modelId, onProgress);
+  // Urdu videos are always made in the diagram style (the character scenes are English-only).
+  if (v.settings?.style === "explainer" || v.settings?.language === "ur") return generateExplainer(v, modelId, onProgress);
   const g = genInputFromVideo(v);
   let title: string;
   let scenes: Scene[];
@@ -402,7 +427,11 @@ function toExplainerPart(p: AiPart): ExplainerPart {
   };
 }
 
-function explainerSystemPrompt(format: "long" | "short") {
+function explainerSystemPrompt(format: "long" | "short", language: "en" | "ur" = "en") {
+  return explainerSystemPromptEn(format) + (language === "ur" ? URDU_RULES : "");
+}
+
+function explainerSystemPromptEn(format: "long" | "short") {
   const [W, H] = STAGE_DIMS[format];
   const portrait = format === "short";
   const safe = portrait
@@ -466,7 +495,8 @@ ${EXPLAINER_EXAMPLE_JSON}`;
 }
 
 function explainerBrief(g: GenInput, extra = "") {
-  const words = targetWords(g.target_seconds, g.speed);
+  const words = spokenWords(g, g.target_seconds);
+  const ur = g.language === "ur";
   const fmt =
     g.format === "short"
       ? `YouTube SHORT (vertical ${STAGE_DIMS.short.join("×")}). Target length ${g.target_seconds} seconds — strict. ONE object/diagram, 3–6 steps in total including the opening and recap. Hook in the first 2 seconds.`
@@ -478,8 +508,8 @@ SUBJECT: ${g.subject}
 AUDIENCE: ${AGE_GUIDE[g.age_group] ?? AGE_GUIDE["6-7"]}
 FORMAT: ${fmt}
 LENGTH TARGET: about ${words} spoken words in total across all beats (±10%).
-CHANNEL: ${g.channel}. Islamic greeting allowed: ${g.greeting ? "yes (one short 'Assalamu alaikum' at the very start)" : "no"}. Ask to like & subscribe at the end: ${g.subscribe ? "yes, one short sentence" : "no"}.
-${g.details ? `TEACHER'S DETAILS / LEARNING GOALS:\n${g.details}\n` : ""}${g.image_urls.length ? `${g.image_urls.length} textbook page photo(s) are attached — base the lesson on them.\n` : ""}${extra}`;
+CHANNEL: ${g.channel}. Islamic greeting allowed: ${g.greeting ? (ur ? "yes (one short 'السلام علیکم!' at the very start)" : "yes (one short 'Assalamu alaikum' at the very start)") : "no"}. Ask to like & subscribe at the end: ${g.subscribe ? (ur ? "yes, one short Urdu sentence" : "yes, one short sentence") : "no"}.
+${ur ? "LANGUAGE: URDU — write everything the viewer hears or reads in Urdu script (see the Urdu rules). The topic/details below may be in English; teach them in Urdu.\n" : ""}${g.details ? `TEACHER'S DETAILS / LEARNING GOALS:\n${g.details}\n` : ""}${g.image_urls.length ? `${g.image_urls.length} textbook page photo(s) are attached — base the lesson on them.\n` : ""}${extra}`;
 }
 
 /** Generate one part; if the drawing is unusable, try once more with the error (within the same time budget). */
@@ -511,7 +541,7 @@ export async function generateExplainer(
   const g = genInputFromVideo(v);
   // Every frame of a diagram video is drawn from vector art: keep long ones within the render time limit.
   if (g.target_seconds > 480) g.target_seconds = 480;
-  const instructions = explainerSystemPrompt(g.format);
+  const instructions = explainerSystemPrompt(g.format, g.language);
   let title: string;
   let youtube: YoutubeMeta;
   let theme: z.infer<typeof AiExplainerTheme> | undefined;
@@ -585,7 +615,7 @@ export async function generateExplainer(
                   g,
                   explainerBrief(
                     g,
-                    `\nThe full video outline is:\n${outlineText}\n\nNOW DRAW AND WRITE ONLY PART ${i + 1} ("${p.name}") — object: ${p.object}. ${p.goal}\nThis part lasts about ${Math.round(p.seconds)} seconds ≈ ${targetWords(p.seconds, g.speed)} spoken words. Number its tagged steps within this part ("Step 1 / N").${
+                    `\nThe full video outline is:\n${outlineText}\n\nNOW DRAW AND WRITE ONLY PART ${i + 1} ("${p.name}") — object: ${p.object}. ${p.goal}\nThis part lasts about ${Math.round(p.seconds)} seconds ≈ ${spokenWords(g, p.seconds)} spoken words. Number its tagged steps within this part (${g.language === "ur" ? '"مرحلہ ۱ از N" with Urdu digits' : '"Step 1 / N"'}).${
                       i === 0 ? " This is the FIRST part: start with the hook/opening step (no tag)." : " Do NOT add a greeting or a video intro; start with a short step that introduces this part's object."
                     }${i === plan.length - 1 ? " This is the LAST part: end with a recap step (no tag) covering the whole video." : " Do NOT add a final recap or goodbye."}${fix}`,
                   ),
@@ -604,7 +634,7 @@ export async function generateExplainer(
     parts = results.map((r) => toExplainerPart(r.part));
   }
 
-  const { explainer, warnings } = sanitizeExplainer({ ...(theme ? { theme } : {}), parts }, g.format);
+  const { explainer, warnings } = sanitizeExplainer({ ...(theme ? { theme } : {}), parts }, g.format, { lang: g.language });
   const plan = planShell({
     title,
     format: g.format,

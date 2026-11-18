@@ -45,10 +45,28 @@ function removeElements(s: string, tags: string[]) {
  * Clean an AI-drawn SVG so the engine (Python ElementTree + resvg) can parse and render it safely.
  * Throws a teacher-friendly error if it isn't usable at all.
  */
+const ARABIC_SCRIPT = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
+const URDU_FONT = "Noto Nastaliq Urdu, Fredoka";
+
+/** Urdu/Arabic-script words in <text> need the Nastaliq font and right-to-left direction to render. */
+function fixRtlText(s: string, lang: "en" | "ur") {
+  return s.replace(/<text\b([^>]*)>([\s\S]*?)<\/text\s*>/gi, (m, attrs: string, body: string) => {
+    if (!ARABIC_SCRIPT.test(body)) return m;
+    let a = attrs;
+    const fam = a.match(/\sfont-family\s*=\s*("([^"]*)"|'([^']*)')/i);
+    const famVal = fam ? String(fam[2] ?? fam[3] ?? "") : "";
+    if (!fam) a += ` font-family="${URDU_FONT}"`;
+    else if (lang === "ur" && !/nastaliq|amiri/i.test(famVal)) a = a.replace(fam[0], ` font-family="${URDU_FONT}"`);
+    if (!/\sdirection\s*=/i.test(a)) a += ` direction="rtl"`;
+    return `<text${a}>${body}</text>`;
+  });
+}
+
 export function sanitizeStage(
   input: string,
   format: "long" | "short",
   label = "The drawing",
+  lang: "en" | "ur" = "en",
 ): { svg: string; ids: Set<string>; warnings: string[] } {
   const warnings: string[] = [];
   let s = String(input ?? "").trim();
@@ -111,6 +129,8 @@ export function sanitizeStage(
     }
     return `<svg${a}>`;
   });
+
+  s = fixRtlText(s, lang);
 
   const v = XMLValidator.validate(s);
   if (v !== true) {
@@ -279,14 +299,16 @@ function cleanAction(raw: ExplainerAction, ids: Set<string>, drop: (why: string)
 export function sanitizeExplainer(
   e: Explainer,
   format: "long" | "short",
+  opts: { lang?: "en" | "ur" } = {},
 ): { explainer: Explainer; warnings: string[] } {
+  const lang = opts.lang === "ur" ? "ur" : "en";
   const warnings: string[] = [];
   if (!e?.parts?.length) throw new Error("The diagram script has no parts.");
   const multi = e.parts.length > 1;
 
   const parts: ExplainerPart[] = e.parts.map((part, pi) => {
     const label = multi ? `Diagram ${pi + 1}` : "The drawing";
-    const { svg, ids, warnings: w } = sanitizeStage(part.stage, format, label);
+    const { svg, ids, warnings: w } = sanitizeStage(part.stage, format, label, lang);
     warnings.push(...w);
 
     const hidden = Array.from(new Set((part.hidden ?? []).map((h) => String(h).trim()))).filter((h) => ids.has(h));

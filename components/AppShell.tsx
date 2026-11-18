@@ -49,7 +49,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
             } else if (j.status === "review") {
               toast(`👀 Script ready for “${name}”`, { action: { label: "Review", onClick: () => router.push(`/studio/videos/${j.id}/edit`) } });
             } else if (j.status === "failed") {
-              toast.error(`⚠️ “${name}” failed`, { description: j.error ?? undefined, action: { label: "Open queue", onClick: () => router.push("/studio/queue") } });
+              toast.error(`⚠️ “${name}” failed`, {
+                description: j.error ?? undefined,
+                action: { label: "Open queue", onClick: () => router.push("/studio/queue") },
+                cancel: { label: "Edit options", onClick: () => router.push(`/studio/create?edit=${j.id}`) },
+              });
             }
           }
           seen.current.set(j.id, j.status);

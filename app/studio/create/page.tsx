@@ -1,18 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle, ArrowLeft, ArrowRight, BookOpen, Lightbulb, Palette, Ratio, Rocket, Sparkles, Wand2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, BookOpen, Languages, Lightbulb, Loader2, Palette, Ratio, RefreshCw, Rocket, Sparkles, Wand2 } from "lucide-react";
 import { toast } from "sonner";
-import { AGE_GROUPS, MUSIC, SUBJECTS, VOICES, characterById } from "@/lib/constants";
-import { api } from "@/lib/client";
+import { AGE_GROUPS, LANGUAGES, MUSIC, SUBJECTS, VOICES, characterById } from "@/lib/constants";
+import { api, type VideoFull } from "@/lib/client";
 import { fmtDuration } from "@/lib/plan";
 import { Button, Chip, PageHeader, Switch, cx } from "@/components/ui";
 import { FormatPicker, durationLabel, type FormatValue } from "@/components/FormatPicker";
 import { StylePanel, StyleSummary, type StyleValue } from "@/components/StylePanel";
 import { ImageUploader } from "@/components/ImageUploader";
-import { styleToSettings, styleFromSettings, useAppSettings } from "@/components/useAppSettings";
+import { styleFromVideo, styleToSettings, styleFromSettings, useAppSettings } from "@/components/useAppSettings";
+import { LanguageChip, URDU_FONT } from "@/components/LanguagePicker";
 import { Stepper, type StepDef } from "@/components/create/Stepper";
 import { LiveSummary } from "@/components/create/LiveSummary";
 
@@ -35,7 +36,18 @@ const IDEAS = [
 const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
 
 export default function CreatePage() {
+  return (
+    <Suspense fallback={null}>
+      <CreateWizard />
+    </Suspense>
+  );
+}
+
+function CreateWizard() {
   const router = useRouter();
+  const editId = useSearchParams().get("edit");
+  const [editVideo, setEditVideo] = useState<VideoFull | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
   const settings = useAppSettings();
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
@@ -50,12 +62,37 @@ export default function CreatePage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Edit & try again: load the existing video's options
+  useEffect(() => {
+    if (!editId) return;
+    let off = false;
+    api<{ video: VideoFull }>(`/api/videos/${editId}`)
+      .then((r) => !off && setEditVideo(r.video))
+      .catch((e) => !off && setEditError(e instanceof Error ? e.message : "Couldn't load this video"));
+    return () => {
+      off = true;
+    };
+  }, [editId]);
+
   useEffect(() => {
     if (!settings || style) return;
+    if (editId) {
+      if (!editVideo) return;
+      const v = editVideo;
+      setTopic(v.topic ?? "");
+      setSubject(v.subject || "Math");
+      setAge(v.age_group || settings.age_group);
+      setDetails(v.details ?? "");
+      setImages(v.image_urls ?? []);
+      setFmt({ format: v.format, target_seconds: v.target_seconds });
+      setReview(!v.auto_render);
+      setStyle(styleFromVideo(v.settings, styleFromSettings(settings)));
+      return;
+    }
     setStyle(styleFromSettings(settings));
     setAge(settings.age_group);
     setFmt(settings.format === "short" ? { format: "short", target_seconds: settings.short_seconds } : { format: "long", target_seconds: settings.long_minutes * 60 });
-  }, [settings, style]);
+  }, [settings, style, editId, editVideo]);
 
   const topicOk = topic.trim().length >= 2 || images.length > 0;
 
@@ -88,6 +125,26 @@ export default function CreatePage() {
     setBusy(true);
     try {
       const t = topic.trim() || "Lesson from the attached textbook pages";
+      if (editId) {
+        await api(`/api/videos/${editId}/redo`, {
+          body: {
+            topic: t,
+            subject,
+            age_group: age,
+            details,
+            image_urls: images,
+            format: fmt.format,
+            target_seconds: fmt.target_seconds,
+            review,
+            settings: styleToSettings(style),
+          },
+        });
+        toast.success("Saved — writing the script again", {
+          description: review ? "You'll be notified when the new script is ready to review." : "It will render automatically when the script is done.",
+        });
+        router.push("/studio/queue");
+        return;
+      }
       await api<{ ids: string[] }>("/api/videos", {
         body: {
           videos: [
@@ -111,7 +168,7 @@ export default function CreatePage() {
       toast.error(e instanceof Error ? e.message : "Couldn't start");
       setBusy(false);
     }
-  }, [style, busy, topicOk, topic, subject, age, details, images, fmt, review, router, go]);
+  }, [style, busy, topicOk, topic, subject, age, details, images, fmt, review, router, go, editId]);
 
   // Ctrl/⌘ + Enter → next step / generate
   useEffect(() => {
@@ -129,10 +186,41 @@ export default function CreatePage() {
   const presenter = characterById(style?.presenter || (style?.mascot === false ? "none" : "ollie"));
   const voice = VOICES.find((v) => v.id === style?.voice);
   const music = MUSIC.find((m) => m.id === style?.music);
+  const urdu = style?.language === "ur";
+  const lang = LANGUAGES.find((l) => l.id === (urdu ? "ur" : "en"));
+  const editTitle = editVideo?.plan?.title || editVideo?.youtube?.title || editVideo?.topic;
+
+  if (editId && (editError || !editVideo || !style)) {
+    return (
+      <div>
+        <PageHeader emoji="🛠️" title="Edit & try again" subtitle="Loading this video's options…" />
+        <div className="card grid min-h-[240px] place-items-center p-8 text-center">
+          {editError ? (
+            <div>
+              <p className="text-sm text-red-300">{editError}</p>
+              <Button className="mt-4" variant="secondary" onClick={() => router.push("/studio/queue")}>
+                Back to queue
+              </Button>
+            </div>
+          ) : (
+            <Loader2 className="h-6 w-6 animate-spin text-fg-subtle" />
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <PageHeader emoji="✨" title="Create a video" subtitle="Four quick steps. Claude writes the lesson, your presenter teaches it, and the studio animates and narrates everything." />
+      {editId ? (
+        <PageHeader
+          emoji="🛠️"
+          title="Edit & try again"
+          subtitle={`Change any option for “${editTitle ?? "this video"}” — the same video gets a fresh script and render. Nothing new is created.`}
+        />
+      ) : (
+        <PageHeader emoji="✨" title="Create a video" subtitle="Four quick steps. Claude writes the lesson, your presenter teaches it, and the studio animates and narrates everything." />
+      )}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
@@ -168,8 +256,10 @@ export default function CreatePage() {
                             <input
                               id="topic"
                               autoFocus
+                              dir="auto"
                               className="h-16 w-full bg-transparent font-display text-lg text-fg outline-none placeholder:text-fg-subtle sm:text-xl"
-                              placeholder="e.g. Doubles — adding the same number twice"
+                              style={/[\u0600-\u06FF]/.test(topic) ? { fontFamily: URDU_FONT } : undefined}
+                              placeholder="e.g. Doubles — or type it in Urdu: گناہ اور معافی"
                               value={topic}
                               maxLength={200}
                               onChange={(e) => {
@@ -180,6 +270,17 @@ export default function CreatePage() {
                             />
                             <span className="hidden shrink-0 text-[11px] tabular-nums text-fg-subtle sm:block">{topic.length}/200</span>
                           </div>
+                        </div>
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-fg-subtle">
+                          <span>Type the topic in English or Urdu.</span>
+                          <button
+                            type="button"
+                            onClick={() => go(2)}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 font-semibold text-fg-muted transition hover:border-white/25 hover:text-fg"
+                          >
+                            <Languages className="h-3.5 w-3.5" /> Language: <LanguageChip value={style?.language} className="-my-0.5" />
+                            <span className="text-fg-subtle">— change in Style</span>
+                          </button>
                         </div>
                         <AnimatePresence>
                           {error && (
@@ -293,18 +394,25 @@ export default function CreatePage() {
                             <div className="grid h-32 w-32 shrink-0 place-items-center rounded-3xl border border-white/10 bg-white/[0.04] text-5xl">🎙️</div>
                           )}
                           <div className="min-w-0">
-                            <div className="eyebrow">Ready to create</div>
-                            <h2 className="mt-3 font-display text-2xl font-semibold leading-tight text-fg sm:text-3xl">{topic.trim() || "Lesson from your textbook pages"}</h2>
+                            <div className="eyebrow">{editId ? "Ready to try again" : "Ready to create"}</div>
+                            <h2
+                              dir="auto"
+                              className="mt-3 font-display text-2xl font-semibold leading-tight text-fg sm:text-3xl"
+                              style={/[\u0600-\u06FF]/.test(topic) ? { fontFamily: URDU_FONT, lineHeight: 1.9 } : undefined}
+                            >
+                              {topic.trim() || "Lesson from your textbook pages"}
+                            </h2>
                             <p className="mt-2 text-sm text-fg-muted">
                               {style.style === "explainer" ? "Diagram explainer narrated by" : presenter.id === "none" ? "Narrated by" : `${presenter.short} presents with`} the <b className="text-fg">{voice?.name}</b> voice ·{" "}
-                              {music?.name.toLowerCase()} · {fmt.format === "short" ? "vertical Short" : "landscape video"}
+                              {music?.name.toLowerCase()} · {fmt.format === "short" ? "vertical Short" : "landscape video"} · in <b className="text-fg">{lang?.name}</b>
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="grid gap-3 sm:grid-cols-4">
+                      <div className="grid gap-3 sm:grid-cols-5">
                         {[
+                          { k: "Language", v: urdu ? "🌐 Urdu · اردو" : "🌐 English" },
                           { k: "Subject", v: `${SUBJECTS.find((s) => s.id === subject)?.emoji ?? ""} ${subject}` },
                           { k: "Age", v: AGE_GROUPS.find((a) => a.id === age)?.label ?? age },
                           { k: "Format", v: fmt.format === "short" ? "📱 Short" : "🖥️ Long" },
@@ -349,9 +457,18 @@ export default function CreatePage() {
                           Script ≈ {fmt.format === "short" ? "20–40 s" : fmt.target_seconds > 360 ? "1–3 min" : "40–90 s"} · Rendering ≈{" "}
                           {fmt.format === "short" ? "1–3" : Math.max(3, Math.round(fmt.target_seconds / 60))} min on a render machine
                         </p>
-                        <Button size="lg" className="relative mt-5 min-w-[260px] text-lg" loading={busy} icon={<Wand2 className="h-5 w-5" />} onClick={generate}>
-                          {busy ? "Starting…" : "Generate my video"}
+                        <Button
+                          size="lg"
+                          className="relative mt-5 min-w-[260px] text-lg"
+                          loading={busy}
+                          icon={editId ? <RefreshCw className="h-5 w-5" /> : <Wand2 className="h-5 w-5" />}
+                          onClick={generate}
+                        >
+                          {busy ? (editId ? "Saving…" : "Starting…") : editId ? "Save changes & try again" : "Generate my video"}
                         </Button>
+                        {editId && (
+                          <p className="relative mt-2 text-[11px] text-fg-subtle">The old script and video files of this video are replaced.</p>
+                        )}
                         <p className="relative mt-3 text-[11px] text-fg-subtle">
                           or press <kbd className="rounded-md border border-white/15 bg-white/[0.06] px-1.5 py-0.5 font-sans">{isMac ? "⌘" : "Ctrl"}</kbd> +{" "}
                           <kbd className="rounded-md border border-white/15 bg-white/[0.06] px-1.5 py-0.5 font-sans">Enter</kbd>
@@ -376,8 +493,8 @@ export default function CreatePage() {
                   {step === 2 ? "Review" : "Continue"} <ArrowRight className="h-4 w-4" />
                 </Button>
               ) : (
-                <Button variant="secondary" loading={busy} icon={<Rocket className="h-4 w-4" />} onClick={generate}>
-                  Generate
+                <Button variant="secondary" loading={busy} icon={editId ? <RefreshCw className="h-4 w-4" /> : <Rocket className="h-4 w-4" />} onClick={generate}>
+                  {editId ? "Save & try again" : "Generate"}
                 </Button>
               )}
             </div>

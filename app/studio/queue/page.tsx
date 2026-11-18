@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Eye, Monitor, Play, RotateCcw, Smartphone, Sparkles, Timer, XCircle } from "lucide-react";
+import { AlertTriangle, Eye, Monitor, Play, RotateCcw, Smartphone, Sparkles, Timer, XCircle, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { api, elapsed, timeAgo, type VideoListItem } from "@/lib/client";
 import { Badge, Button, Empty, PageHeader, Progress, Segmented, Skeleton, cx } from "@/components/ui";
@@ -93,7 +93,7 @@ function JobCard({ j, onAction, onOpen }: { j: VideoListItem; onAction: () => vo
           <Pipeline status={j.status} stage={j.stage} autoRender={j.auto_render} />
         </div>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-2 xl:w-52 xl:justify-end">
+        <div className="flex shrink-0 flex-wrap items-center gap-2 xl:w-64 xl:justify-end">
           {j.status === "review" && (
             <Link href={`/studio/videos/${j.id}/edit`}>
               <Button size="sm" icon={<Eye className="h-4 w-4" />}>
@@ -110,6 +110,13 @@ function JobCard({ j, onAction, onOpen }: { j: VideoListItem; onAction: () => vo
             <Button size="sm" variant="warm" loading={busy === "retry"} icon={<RotateCcw className="h-4 w-4" />} onClick={() => act("retry")}>
               Retry
             </Button>
+          )}
+          {(failed || j.status === "canceled") && (
+            <Link href={`/studio/create?edit=${j.id}`}>
+              <Button size="sm" variant="secondary" icon={<SlidersHorizontal className="h-4 w-4" />}>
+                Edit options
+              </Button>
+            </Link>
           )}
           {(active || j.status === "review") && (
             <Button size="sm" variant="ghost" loading={busy === "cancel"} icon={<XCircle className="h-4 w-4" />} onClick={() => act("cancel")}>

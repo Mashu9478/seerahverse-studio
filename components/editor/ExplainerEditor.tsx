@@ -12,6 +12,7 @@ import {
   type VideoPlan,
 } from "@/lib/plan";
 import { Card, IconButton, cx } from "@/components/ui";
+import { URDU_FONT } from "@/components/LanguagePicker";
 
 /* ------------------------------------------------------------------ helpers */
 
@@ -99,6 +100,8 @@ export function ExplainerEditor({
   locked: boolean;
 }) {
   const ex = plan.explainer;
+  const urdu = plan.language === "ur";
+  const rtl = urdu ? ({ dir: "rtl" as const, lang: "ur", style: { fontFamily: URDU_FONT, lineHeight: 2 } }) : {};
   const [partIdx, setPartIdx] = useState(0);
   const [stepIdx, setStepIdx] = useState(0);
   const [startView, setStartView] = useState(false);
@@ -165,7 +168,7 @@ export function ExplainerEditor({
   const hoverPath =
     hover && hover.do === "flow" && hover.path && vb ? hover.path.map((p) => `${p[0]},${p[1]}`).join(" ") : null;
 
-  const hl = new Set((step.highlight ?? "").toLowerCase().match(/[a-z']+/g) ?? []);
+  const hl = new Set(urdu ? (step.highlight ?? "").split(/\s+/).filter(Boolean) : ((step.highlight ?? "").toLowerCase().match(/[a-z']+/g) ?? []));
   const titleWords = step.title.split(" ");
 
   return (
@@ -306,11 +309,15 @@ export function ExplainerEditor({
                       style={{ background: `linear-gradient(to bottom, ${theme.bg ?? "#EEF2F4"}EE, ${theme.bg ?? "#EEF2F4"}99 60%, transparent)` }}
                     >
                       {step.tag && (
-                        <span className="inline-block rounded-full border border-slate-300 bg-white px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-slate-700">{step.tag}</span>
+                        <span {...(urdu ? { dir: "rtl", style: { fontFamily: URDU_FONT } } : {})} className="inline-block rounded-full border border-slate-300 bg-white px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-slate-700">{step.tag}</span>
                       )}
-                      <div className={cx("mt-1 font-display font-bold leading-tight", portrait ? "text-[17px]" : "text-[20px]")} style={{ color: theme.ink ?? "#1E2A30" }}>
+                      <div
+                        dir={urdu ? "rtl" : undefined}
+                        className={cx("mt-1 font-display font-bold", urdu ? "leading-[2]" : "leading-tight", portrait ? "text-[17px]" : "text-[20px]")}
+                        style={{ color: theme.ink ?? "#1E2A30", ...(urdu ? { fontFamily: URDU_FONT } : {}) }}
+                      >
                         {titleWords.map((w, i) => (
-                          <span key={i} style={hl.has(w.toLowerCase().replace(/[^a-z']/g, "")) ? { color: theme.accent ?? "#1C7ED6" } : undefined}>
+                          <span key={i} style={(urdu ? hl.has(w) : hl.has(w.toLowerCase().replace(/[^a-z']/g, ""))) ? { color: theme.accent ?? "#1C7ED6" } : undefined}>
                             {w}{" "}
                           </span>
                         ))}
@@ -337,16 +344,16 @@ export function ExplainerEditor({
                   <div className="grid gap-3 sm:grid-cols-[140px_minmax(0,1fr)]">
                     <div>
                       <label className="label">Step tag</label>
-                      <input className="input" value={step.tag ?? ""} placeholder="Step 1 / 4" maxLength={24} onChange={(e) => setStep({ ...step, tag: e.target.value || null })} />
+                      <input {...rtl} className="input" value={step.tag ?? ""} placeholder={urdu ? "مرحلہ ۱ از ۴" : "Step 1 / 4"} maxLength={24} onChange={(e) => setStep({ ...step, tag: e.target.value || null })} />
                     </div>
                     <div>
                       <label className="label">Title on screen</label>
-                      <input className="input" value={step.title} maxLength={60} onChange={(e) => setStep({ ...step, title: e.target.value })} />
+                      <input {...rtl} className="input" value={step.title} maxLength={60} onChange={(e) => setStep({ ...step, title: e.target.value })} />
                     </div>
                   </div>
                   <div>
                     <label className="label">Coloured word(s) in the title</label>
-                    <input className="input" value={step.highlight ?? ""} placeholder="e.g. water" onChange={(e) => setStep({ ...step, highlight: e.target.value })} />
+                    <input {...rtl} className="input" value={step.highlight ?? ""} placeholder={urdu ? "مثلاً پانی" : "e.g. water"} onChange={(e) => setStep({ ...step, highlight: e.target.value })} />
                   </div>
 
                   <div className="space-y-3">
@@ -361,6 +368,7 @@ export function ExplainerEditor({
                           <span className="tabular-nums">{wordCount(b.say)} words</span>
                         </div>
                         <textarea
+                          {...rtl}
                           className="input min-h-[72px] text-sm"
                           value={b.say}
                           onChange={(e) => setBeat(k, { ...b, say: e.target.value })}
@@ -368,6 +376,7 @@ export function ExplainerEditor({
                         />
                         <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_110px]">
                           <input
+                            {...rtl}
                             className="input py-2 text-xs"
                             value={b.caption ?? ""}
                             placeholder="Caption (blank = same as narration)"

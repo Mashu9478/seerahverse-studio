@@ -41,7 +41,15 @@ export function videoSettingsFrom(app: AppSettings, s: z.infer<typeof SettingsIn
   // Urdu is made with the diagram style and the Urdu voices
   if (base.language === "ur") {
     const v = VOICES.find((x) => x.id === base.voice);
-    return { ...base, style: "explainer", presenter: "none", mascot: false, voice: v?.lang === "ur" ? base.voice : DEFAULT_VOICE_FOR.ur };
+    return {
+      ...base,
+      style: "explainer",
+      presenter: "none",
+      mascot: false,
+      voice: v?.lang === "ur" ? base.voice : DEFAULT_VOICE_FOR.ur,
+      // the Urdu voices read slowly; 1.1 sounds natural unless a speed was chosen for this video
+      speed: s.speed ?? Math.max(base.speed, 1.1),
+    };
   }
   const v = VOICES.find((x) => x.id === base.voice);
   return v && v.lang !== "en" ? { ...base, voice: DEFAULT_VOICE_FOR.en } : base;

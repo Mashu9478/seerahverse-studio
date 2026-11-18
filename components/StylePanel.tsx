@@ -2,13 +2,16 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
-import { Check, Clapperboard, Mic2, Music2, Palette, Pause, Play, UserRound, Wand2 } from "lucide-react";
-import { MUSIC, PALETTES, VOICES, characterById } from "@/lib/constants";
+import { Check, Clapperboard, Languages, Mic2, Music2, Palette, Pause, Play, UserRound, Wand2 } from "lucide-react";
+import { DEFAULT_VOICE_FOR, LANGUAGES, MUSIC, PALETTES, VOICES, characterById, voicesFor, type LanguageId } from "@/lib/constants";
+import { LanguageChip, LanguagePicker } from "./LanguagePicker";
 import { PresenterPicker } from "./PresenterPicker";
 import { VideoStylePicker } from "./VideoStylePicker";
 import { Chip, Segmented, Toggle, cx } from "./ui";
 
 export interface StyleValue {
+  /** Narration + on-screen text language. Urdu uses the diagram style and the Urdu voices. */
+  language: LanguageId;
   voice: string;
   speed: number;
   music: "none" | "cheerful" | "calm";
@@ -74,7 +77,18 @@ function Equalizer({ on }: { on: boolean }) {
 }
 
 /* ------------------------------------------------------------------ voice picker */
-export function VoicePicker({ value, onChange, compact }: { value: string; onChange: (v: string) => void; compact?: boolean }) {
+export function VoicePicker({
+  value,
+  onChange,
+  compact,
+  language = "en",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  compact?: boolean;
+  language?: LanguageId;
+}) {
+  const list = voicesFor(language);
   const [playing, setPlaying] = useState<string | null>(null);
   const audio = useRef<HTMLAudioElement | null>(null);
   useEffect(() => () => audio.current?.pause(), []);
@@ -95,8 +109,12 @@ export function VoicePicker({ value, onChange, compact }: { value: string; onCha
   }
 
   return (
-    <div role="radiogroup" aria-label="Narrator voice" className={cx("grid gap-2.5", compact ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5")}>
-      {VOICES.map((v) => {
+    <div
+      role="radiogroup"
+      aria-label="Narrator voice"
+      className={cx("grid gap-2.5", compact || list.length <= 4 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5")}
+    >
+      {list.map((v) => {
         const on = v.id === value;
         const isPlaying = playing === v.id;
         return (
@@ -203,12 +221,41 @@ export function StylePanel({
   lockStyle?: boolean;
 }) {
   const set = <K extends keyof StyleValue>(k: K, v: StyleValue[K]) => onChange({ ...value, [k]: v });
+  const language: LanguageId = value.language === "ur" ? "ur" : "en";
+  const urdu = language === "ur";
   const presenter = value.presenter || (value.mascot ? "ollie" : "none");
   const music = MUSIC.find((m) => m.id === value.music);
-  const explainer = value.style === "explainer";
+  const explainer = urdu || value.style === "explainer";
+
+  function setLanguage(l: LanguageId) {
+    const voiceOk = VOICES.find((v) => v.id === value.voice)?.lang === l;
+    onChange({
+      ...value,
+      language: l,
+      voice: voiceOk ? value.voice : DEFAULT_VOICE_FOR[l],
+      ...(l === "ur" ? { style: "explainer" as const, presenter: "none", mascot: false } : {}),
+    });
+  }
 
   return (
     <div className="space-y-4">
+      {!lockStyle && (
+        <Section
+          icon={<Languages className="h-5 w-5" />}
+          tone="bg-emerald-400/15 text-emerald-300"
+          title="Language"
+          desc="The narrator speaks, and all on-screen text is written, in this language."
+          aside={<LanguageChip value={language} />}
+        >
+          <LanguagePicker value={language} onChange={setLanguage} />
+          {urdu && (
+            <p className="mt-3 text-xs text-fg-muted">
+              Urdu videos are written in Urdu script (Nastaliq, right to left) with an Urdu narrator, and use the Diagram explainer style for now.
+            </p>
+          )}
+        </Section>
+      )}
+
       {!lockStyle && (
       <Section
         icon={<Clapperboard className="h-5 w-5" />}
@@ -217,7 +264,12 @@ export function StylePanel({
         desc="How the lesson is shown on screen."
         aside={<Chip active color={explainer ? "sky" : "brand"}>{explainer ? "Diagram" : "Character"}</Chip>}
       >
-        <VideoStylePicker value={value.style ?? "presenter"} onChange={(st) => onChange({ ...value, style: st })} />
+        <VideoStylePicker
+          value={explainer ? "explainer" : (value.style ?? "presenter")}
+          onChange={(st) => onChange({ ...value, style: st })}
+          disabled={urdu ? ["presenter"] : []}
+          disabledNote="Urdu videos use the Diagram explainer style for now"
+        />
       </Section>
       )}
 
@@ -241,8 +293,14 @@ export function StylePanel({
         </Section>
       )}
 
-      <Section icon={<Mic2 className="h-5 w-5" />} tone="bg-cyan-400/15 text-cyan-300" title="Narrator voice" desc="Tap ▶ to hear each voice. The presenter speaks with this voice.">
-        <VoicePicker value={value.voice} onChange={(v) => set("voice", v)} />
+      <Section
+        icon={<Mic2 className="h-5 w-5" />}
+        tone="bg-cyan-400/15 text-cyan-300"
+        title="Narrator voice"
+        desc={urdu ? "Tap ▶ to hear each Urdu voice." : "Tap ▶ to hear each voice. The presenter speaks with this voice."}
+        aside={urdu ? <LanguageChip value="ur" /> : undefined}
+      >
+        <VoicePicker value={value.voice} onChange={(v) => set("voice", v)} language={language} />
         <SpeedSlider value={value.speed} onChange={(v) => set("speed", v)} />
       </Section>
 
@@ -318,9 +376,11 @@ export function StyleSummary({ value }: { value: StyleValue }) {
   const music = MUSIC.find((m) => m.id === value.music);
   const presenter = characterById(value.presenter || (value.mascot ? "ollie" : "none"));
   const palette = PALETTES.find((p) => p.id === value.palette);
+  const lang = LANGUAGES.find((l) => l.id === (value.language === "ur" ? "ur" : "en"));
   return (
     <div className="flex flex-wrap gap-1.5">
-      {value.style === "explainer" ? (
+      <Chip active color={lang?.id === "ur" ? "leaf" : "brand"}>🌐 {lang?.name}</Chip>
+      {value.style === "explainer" || value.language === "ur" ? (
         <Chip active color="sky">🔬 Diagram explainer</Chip>
       ) : (
         <Chip active color="rose">

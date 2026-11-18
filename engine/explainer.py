@@ -673,7 +673,7 @@ def parts_of(plan):
         for p in ex["parts"]:
             parts.append({"stage": p["stage"], "hidden": p.get("hidden", []), "camera": p.get("camera"),
                           "steps": p["steps"], "theme": theme, "w": W, "h": H,
-                          "captions": plan.get("captions", True)})
+                          "captions": plan.get("captions", True), "lang": plan.get("language", "en")})
         cfg = {"voice": plan.get("voice", "af_heart"), "speed": plan.get("speed", 0.92),
                "music": plan.get("music", "calm"), "sfx": plan.get("sfx", True), "title": plan.get("title", ""),
                "fps": 30}

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import "@fontsource/fredoka/600.css";
+import "@fontsource/noto-nastaliq-urdu/600.css";
+import "@fontsource/noto-nastaliq-urdu/700.css";
 import "@fontsource/sora/400.css";
 import "@fontsource/sora/500.css";
 import "@fontsource/sora/600.css";
