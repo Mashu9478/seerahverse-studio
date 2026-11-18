@@ -3,11 +3,12 @@ import { getAppSettings, getVideo, q, updateVideo } from "./db";
 import { generateScript } from "./ai";
 import { tick } from "./queue";
 import type { VideoSettings } from "./plan";
-import { PRESENTER_IDS, type AppSettings, type PresenterId } from "./constants";
+import { DEFAULT_VOICE_FOR, PRESENTER_IDS, VOICES, type AppSettings, type PresenterId } from "./constants";
 
 export const SettingsInput = z
   .object({
     voice: z.string(),
+    language: z.enum(["en", "ur"]),
     speed: z.number().min(0.8).max(1.15),
     music: z.enum(["none", "cheerful", "calm"]),
     sfx: z.boolean(),
@@ -36,7 +37,19 @@ export const CreateVideoInput = z.object({
 export type CreateVideoInput = z.infer<typeof CreateVideoInput>;
 
 export function videoSettingsFrom(app: AppSettings, s: z.infer<typeof SettingsInput>): VideoSettings {
+  const base = videoSettingsBase(app, s);
+  // Urdu is made with the diagram style and the Urdu voices
+  if (base.language === "ur") {
+    const v = VOICES.find((x) => x.id === base.voice);
+    return { ...base, style: "explainer", presenter: "none", mascot: false, voice: v?.lang === "ur" ? base.voice : DEFAULT_VOICE_FOR.ur };
+  }
+  const v = VOICES.find((x) => x.id === base.voice);
+  return v && v.lang !== "en" ? { ...base, voice: DEFAULT_VOICE_FOR.en } : base;
+}
+
+function videoSettingsBase(app: AppSettings, s: z.infer<typeof SettingsInput>): VideoSettings {
   return {
+    language: ((s.language ?? app.language ?? "en") === "ur" ? "ur" : "en") as "en" | "ur",
     voice: s.voice ?? app.voice,
     speed: s.speed ?? app.speed,
     music: (s.music ?? app.music) as VideoSettings["music"],

@@ -1,15 +1,29 @@
 export const VOICES = [
-  { id: "af_heart", name: "Heart", desc: "Warm, kind teacher", accent: "US", gender: "female", emoji: "💜" },
-  { id: "af_bella", name: "Bella", desc: "Bright & cheerful", accent: "US", gender: "female", emoji: "🌟" },
-  { id: "af_nicole", name: "Nicole", desc: "Soft & calm", accent: "US", gender: "female", emoji: "🌙" },
-  { id: "af_sky", name: "Sky", desc: "Young & lively", accent: "US", gender: "female", emoji: "☁️" },
-  { id: "am_michael", name: "Michael", desc: "Friendly big brother", accent: "US", gender: "male", emoji: "🧢" },
-  { id: "am_puck", name: "Puck", desc: "Playful & fun", accent: "US", gender: "male", emoji: "🎈" },
-  { id: "am_fenrir", name: "Fenrir", desc: "Deep storyteller", accent: "US", gender: "male", emoji: "🐺" },
-  { id: "bf_emma", name: "Emma", desc: "Gentle British", accent: "UK", gender: "female", emoji: "🌷" },
-  { id: "bm_george", name: "George", desc: "Clear British", accent: "UK", gender: "male", emoji: "🎩" },
-  { id: "bm_fable", name: "Fable", desc: "British storyteller", accent: "UK", gender: "male", emoji: "📖" },
+  { id: "af_heart", name: "Heart", desc: "Warm, kind teacher", accent: "US", gender: "female", emoji: "💜", lang: "en" },
+  { id: "af_bella", name: "Bella", desc: "Bright & cheerful", accent: "US", gender: "female", emoji: "🌟", lang: "en" },
+  { id: "af_nicole", name: "Nicole", desc: "Soft & calm", accent: "US", gender: "female", emoji: "🌙", lang: "en" },
+  { id: "af_sky", name: "Sky", desc: "Young & lively", accent: "US", gender: "female", emoji: "☁️", lang: "en" },
+  { id: "am_michael", name: "Michael", desc: "Friendly big brother", accent: "US", gender: "male", emoji: "🧢", lang: "en" },
+  { id: "am_puck", name: "Puck", desc: "Playful & fun", accent: "US", gender: "male", emoji: "🎈", lang: "en" },
+  { id: "am_fenrir", name: "Fenrir", desc: "Deep storyteller", accent: "US", gender: "male", emoji: "🐺", lang: "en" },
+  { id: "bf_emma", name: "Emma", desc: "Gentle British", accent: "UK", gender: "female", emoji: "🌷", lang: "en" },
+  { id: "bm_george", name: "George", desc: "Clear British", accent: "UK", gender: "male", emoji: "🎩", lang: "en" },
+  { id: "bm_fable", name: "Fable", desc: "British storyteller", accent: "UK", gender: "male", emoji: "📖", lang: "en" },
+  { id: "hf_alpha", name: "Ayesha", desc: "Warm Urdu teacher", accent: "Urdu", gender: "female", emoji: "🌸", lang: "ur" },
+  { id: "hf_beta", name: "Zainab", desc: "Soft Urdu voice", accent: "Urdu", gender: "female", emoji: "🌼", lang: "ur" },
+  { id: "hm_omega", name: "Bilal", desc: "Clear Urdu voice", accent: "Urdu", gender: "male", emoji: "🌙", lang: "ur" },
+  { id: "hm_psi", name: "Hamza", desc: "Friendly Urdu storyteller", accent: "Urdu", gender: "male", emoji: "📗", lang: "ur" },
 ] as const;
+
+export type LanguageId = "en" | "ur";
+export const LANGUAGES: { id: LanguageId; name: string; native: string; dir: "ltr" | "rtl"; note: string }[] = [
+  { id: "en", name: "English", native: "English", dir: "ltr", note: "Both video styles" },
+  { id: "ur", name: "Urdu", native: "اردو", dir: "rtl", note: "Urdu narration and Urdu on-screen text (Diagram explainer style)" },
+];
+export const DEFAULT_VOICE_FOR: Record<LanguageId, string> = { en: "af_heart", ur: "hf_alpha" };
+export function voicesFor(lang: LanguageId) {
+  return VOICES.filter((v) => v.lang === lang);
+}
 
 export type VoiceId = (typeof VOICES)[number]["id"];
 
@@ -97,6 +111,7 @@ export const DEFAULT_APP_SETTINGS = {
   mascot: true,
   presenter: "ollie" as string,
   style: "presenter" as string,
+  language: "en" as string,
   captions: true,
   palette: "bright",
   format: "long",

@@ -269,6 +269,7 @@ export const PlanSchema = z.object({
   target_seconds: z.number().int().min(10).max(1500),
   strict_length: z.boolean(),
   voice: z.string(),
+  language: z.enum(["en", "ur"]).optional(),
   speed: z.number().min(0.8).max(1.15),
   music: z.enum(["none", "cheerful", "calm"]),
   sfx: z.boolean(),
@@ -330,6 +331,7 @@ export const AiOutlineSchema = z.object({
 
 export interface VideoSettings {
   voice: string;
+  language?: "en" | "ur";
   speed: number;
   music: "none" | "cheerful" | "calm";
   sfx: boolean;
@@ -362,6 +364,7 @@ export function planShell(input: {
     target_seconds: input.target_seconds,
     strict_length: input.format === "short",
     voice: s.voice,
+    language: s.language ?? "en",
     speed: clamp(s.speed, 0.8, 1.15),
     music: s.music,
     sfx: s.sfx,
